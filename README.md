@@ -1,2 +1,2 @@
 # MCLauncherAdvanced
-A third-party Minecraft launcher with an interface similar to the official.
+A third-party powered launcher for Minecraft Java Edition with an interface similar to the official.
