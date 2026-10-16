@@ -94,7 +94,7 @@ fn main() {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            updater::launcher_update_status, updater::check_launcher_update, updater::download_launcher_update, updater::cancel_launcher_update, updater::apply_launcher_update,
+            updater::launcher_update_status, updater::check_launcher_update, updater::download_launcher_update, updater::cancel_launcher_update,
             content_downloads::identify_instance_content,
             content_downloads::search_instance_content,
             content_downloads::check_content_updates,

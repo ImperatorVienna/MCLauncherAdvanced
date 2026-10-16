@@ -12,9 +12,10 @@ pub struct Status {
     completed: u64,
     total: u64,
     error: Option<String>,
+    announcement: Option<self_update::Announcement>,
 }
 impl Default for Status {
-    fn default()->Self { Self {phase:"idle".into(),version:None,completed:0,total:0,error:None} }
+    fn default()->Self { Self {phase:"idle".into(),version:None,completed:0,total:0,error:None,announcement:None} }
 }
 #[derive(Default)]
 struct Inner { status: Status, available: Option<Update>, staged: Option<tempfile::TempDir> }
@@ -40,10 +41,10 @@ impl Updater {
                 self_update::check(&current,target)
             })();
             match result {
-                Ok((published,update))=>{
+                Ok((published,update,announcement))=>{
                     let mut i=this.inner.lock().unwrap();
                     i.status.phase=if update.is_some(){"available"}else if published{"current"}else{"unpublished"}.into();
-                    i.status.version=update.as_ref().map(|u|u.version.clone());i.available=update;
+                    i.status.version=update.as_ref().map(|u|u.version.clone());i.available=update;i.status.announcement=announcement;
                 },
                 Err(e)=>this.failure(e),
             }
@@ -58,7 +59,7 @@ pub fn check_launcher_update(app:tauri::AppHandle,updater:tauri::State<'_,Arc<Up
 #[tauri::command]
 pub fn cancel_launcher_update(updater:tauri::State<'_,Arc<Updater>>) { updater.cancel.store(true,Ordering::SeqCst); }
 #[tauri::command]
-pub fn download_launcher_update(updater:tauri::State<'_,Arc<Updater>>,backend:tauri::State<'_,Arc<Backend>>)->Result<(),String>{
+pub fn download_launcher_update(app:tauri::AppHandle,updater:tauri::State<'_,Arc<Updater>>,backend:tauri::State<'_,Arc<Backend>>)->Result<(),String>{
     updater.active.compare_exchange(false,true,Ordering::SeqCst,Ordering::SeqCst).map_err(|_|"An update operation is already running")?;
     let active=Active(updater.inner().clone());
     backend.busy.compare_exchange(false,true,Ordering::SeqCst,Ordering::SeqCst).map_err(|_|"A file task is running; wait for completion")?;
@@ -68,7 +69,7 @@ pub fn download_launcher_update(updater:tauri::State<'_,Arc<Updater>>,backend:ta
     {let mut i=updater.inner.lock().unwrap();i.status.phase="downloading".into();i.status.error=None;i.status.completed=0;i.status.total=update.file.size;}
     let this=updater.inner().clone();
     std::thread::spawn(move||{
-        let _active=active;let _busy=busy;
+        let _active=active;
         let result=(||{
             let (_,destination)=launcher_platform::updater::target()?;
             let root=destination.parent().ok_or("Invalid executable directory")?;
@@ -79,37 +80,30 @@ pub fn download_launcher_update(updater:tauri::State<'_,Arc<Updater>>,backend:ta
             Ok::<_,String>(staging)
         })();
         match result {
-            Ok(staging)=>{let mut i=this.inner.lock().unwrap();i.staged=Some(staging);i.status.phase="ready".into();},
+            Ok(staging)=>{
+                this.inner.lock().unwrap().staged=Some(staging);
+                if let Err(e)=apply(app,this.clone(),busy) {this.failure(e);}
+            },
             Err(e)=>this.failure(e),
         }
     });
     Ok(())
 }
-#[tauri::command]
-pub async fn apply_launcher_update(app:tauri::AppHandle,updater:tauri::State<'_,Arc<Updater>>,backend:tauri::State<'_,Arc<Backend>>)->Result<(),String>{
-    let updater=updater.inner().clone();let backend=backend.inner().clone();
-    tauri::async_runtime::spawn_blocking(move||apply(app,updater,backend)).await.map_err(|e|e.to_string())?
-}
-fn apply(app:tauri::AppHandle,updater:Arc<Updater>,backend:Arc<Backend>)->Result<(),String>{
-    updater.active.compare_exchange(false,true,Ordering::SeqCst,Ordering::SeqCst).map_err(|_|"An update operation is already running")?;
-    let _active=Active(updater.clone());
-    backend.busy.compare_exchange(false,true,Ordering::SeqCst,Ordering::SeqCst).map_err(|_|"A file task is running; wait for completion")?;
-    let busy=Busy(backend.clone());
-    let result:Result<(),String>=(||{
-        let mut i=updater.inner.lock().unwrap();
-        let update=i.available.as_ref().ok_or("Check for launcher updates first")?;
-        let directory=i.staged.as_ref().ok_or("Download the launcher update first")?;
-        let staged=launcher_install::safe_path(directory.path(),&update.file.path)?;
-        if !download::valid_file(&staged,&update.file,&AtomicBool::new(false))? {return Err("Downloaded file verification failed".into());}
-        let (_,current)=launcher_platform::updater::target()?;
-        let destination=launcher_install::safe_path(current.parent().ok_or("Invalid executable directory")?,&update.file.path)?;
-        launcher_platform::updater::replace_after_exit(&current,&staged,&destination)?;
-        // Helper needs this directory after the launcher exits; retain its diagnostic log.
-        let _=i.staged.take().unwrap().keep();
-        i.status.phase="restarting".into();
-        Ok(())
-    })();
-    if let Err(e)=result {updater.failure(e.clone());return Err(e);}
+fn apply(app:tauri::AppHandle,updater:Arc<Updater>,busy:Busy)->Result<(),String>{
+    let (update,directory)={
+        let mut inner=updater.inner.lock().unwrap();
+        (inner.available.clone().ok_or("Check for launcher updates first")?,
+         inner.staged.take().ok_or("Download the launcher update first")?)
+    };
+    let staged=launcher_install::safe_path(directory.path(),&update.file.path)?;
+    if !download::valid_file(&staged,&update.file,&updater.cancel)? {return Err("Downloaded file verification failed".into());}
+    let (_,current)=launcher_platform::updater::target()?;
+    let destination=launcher_install::safe_path(current.parent().ok_or("Invalid executable directory")?,&update.file.path)?;
+    if updater.cancel.load(Ordering::SeqCst) { return Err("Task cancelled".into()); }
+    updater.inner.lock().unwrap().status.phase="restarting".into();
+    launcher_platform::updater::replace_after_exit(&current,&staged,&destination)?;
+    // Only the replacement helper and the new process need the verified staging directory.
+    let _=directory.keep();
     // Keep all other writers blocked until process exit releases the session lock.
     std::mem::forget(busy);
     app.exit(0);

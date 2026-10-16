@@ -76,8 +76,7 @@ validation. Windows test builds are explicitly pre-release until real-device val
 selection, exact platform asset naming and required SHA-256 metadata. It reuses
 the verified download service. No updater code was added to `launcher-core`.
 Tauri `updater` owns startup checking, task state, cancellation, shared writer/game
-exclusion and exit coordination. The frontend owns translated status, explicit
-restart interaction and stable focus identity. `launcher-platform::updater`
+exclusion and exit coordination. The frontend owns translated status, announcement navigation and automatic-update task locking and stable focus identity. `launcher-platform::updater`
 locates the packaged executable and starts the host-specific replacement helper;
 it has no knowledge of GitHub, release versions or frontend pages.
 

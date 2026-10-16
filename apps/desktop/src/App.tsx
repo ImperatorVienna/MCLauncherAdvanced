@@ -1,3 +1,4 @@
+import { LauncherUpdateProvider, useLauncherUpdate } from "./state/launcherUpdate";
 import { ContentBrowser } from "./pages/ContentBrowser";
 import { type ContentKind } from "./state/contentSource";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -36,7 +37,10 @@ import heroLogo from "./assets/mclogo-java.png";
 import "./styles/app.css";
 const tabs = ["play", "instances", ...managementPages, "patch-notes"];
 const accountTabs = ["accounts", "skins"];
-export function App() {
+export function App() { return <LauncherUpdateProvider><AppContent/></LauncherUpdateProvider>; }
+function AppContent() {
+    const updater=useLauncherUpdate();
+    const updateLocked=useRef(false);updateLocked.current=updater.locked;
     useLocale();
     const accounts = useAccounts();
     const skins = useSkins();
@@ -62,7 +66,7 @@ export function App() {
     const java = useJava(library.preview, installer.busy);
     const game = useGameLaunch(library.preview);
     const preparingGame = game.status.preparing || (import.meta.env.DEV && library.preview && new URLSearchParams(window.location.search).get("launchDemo") === "repair" && installer.busy);
-    const working = library.busy || installer.busy || game.busy;
+    const working = library.busy || installer.busy || game.busy || updater.locked;
     const steam = useSteamSession(manager, library.preview);
     const selected = library.data.instances.find(i => i.id === library.data.selectedId);
     const instanceOptions = useMemo(() => library.data.instances.map(labelOf), [library.data.instances]);
@@ -108,6 +112,7 @@ export function App() {
     }
     const [browseQuery,setBrowseQuery]=useState("");
     function changePage(next: string) {
+        if(updateLocked.current)return;
         if (next === pageRef.current)
             return;
         setBrowseQuery("");
@@ -127,6 +132,7 @@ export function App() {
         requestedFocus.current = selected && !working ? "browse-instance" : "tab-mods";
     }
     function previousPage() {
+        if(updateLocked.current)return;
         const previous = pageHistory.current.pop();
         if (!previous)
             return;
@@ -177,6 +183,25 @@ export function App() {
             }
         }
     }, [page, manager]);
+    const updateReturnFocus=useRef<string | undefined>(undefined);
+    useLayoutEffect(()=>{
+        const elements=main.current?.querySelectorAll<HTMLElement>(".sidebar, .workspace > header, .tabs, .page-scroll");
+        if(updater.locked)updateReturnFocus.current=manager.activeId();
+        elements?.forEach(element=>element.toggleAttribute("inert",updater.locked));
+        if(updater.locked){
+            manager.focus("launcher-cancel-update");
+        }else if(updateReturnFocus.current){
+            manager.preserveFocus(updateReturnFocus.current);
+            updateReturnFocus.current=undefined;
+        }
+        const trapUpdateTab=(event:KeyboardEvent)=>{
+            if(updater.locked&&event.key==="Tab"){
+                event.preventDefault();manager.focus("launcher-cancel-update");
+            }
+        };
+        window.addEventListener("keydown",trapUpdateTab,true);
+        return()=>{elements?.forEach(element=>element.removeAttribute("inert"));window.removeEventListener("keydown",trapUpdateTab,true);};
+    },[updater.locked,manager]);
     const wasInstalling = useRef(false);
     useLayoutEffect(() => {
         if (installer.busy && !wasInstalling.current && !modal)
@@ -259,7 +284,7 @@ export function App() {
               {pageLabel(section)}
             </SidebarButton>))}
           <div className="sidebar-bottom">
-            <SidebarButton id="nav-launcher-updates" selected={page === "launcher-updates"} icon={<span className="side-symbol">▤</span>} onClick={() => changePage("launcher-updates")}>{t("What's new?")}</SidebarButton>
+            <SidebarButton id="nav-launcher-updates" selected={page === "launcher-updates"} icon={<span className="side-symbol">▤</span>} onClick={() => changePage("launcher-updates")}>{t("What's new?")}{updater.status.version&&<span className="update-badge" role="img" aria-label={t("Launcher update available: {version}",{version:updater.status.version})}><span aria-hidden="true"/></span>}</SidebarButton>
             <SidebarButton id="nav-settings" selected={page === "settings"} icon={<span className="side-symbol">⚙</span>} onClick={() => changePage("settings")}>{t("Settings")}</SidebarButton>
             <p>{t("Unofficial launcher \u00B7 In development")}</p>
           </div>
@@ -306,8 +331,12 @@ export function App() {
                       </article>))}
                   </div>
                 </section>
-              </div>) : page === "skins" ? (!selectedMicrosoft(accounts.data) ? <section className="skins-page"><p className="skin-notice">{t("Sign in to use skins.")}</p></section> : <SkinsPage library={skins}/>) : page === "accounts" ? <AccountsPage accounts={accounts}/> : managementPages.includes(page) ? (<InstanceContent title={page} instanceId={selected?.id} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}} busy={working} preview={library.preview} hasLoader={!!selected?.loader} refreshKey={JSON.stringify([installer.task?.running,installer.task?.progress.phase,installer.task?.error])} onBrowse={() => changePage(page.replace("instance-",""))} onStarted={()=>void installer.refreshTask()}/>) : ["mods","resource-packs","shaders"].includes(page) ? <ContentBrowser initialQuery={browseQuery} kind={page as ContentKind} item={selected} busy={working} preview={library.preview} onStarted={()=>void installer.refreshTask()} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "launcher-updates" ? (<LauncherUpdates />) : page === "instances" ? <InstancesPage onBrowseModMenu={()=>browseMod("Mod Menu")} library={library} installer={installer} java={java} gameBusy={game.busy} onOpen={open} onViewLogs={item=>viewLogs({instanceId:item.id,label:item.name})} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "settings" ? <SettingsPage onBrowseControllerMod={()=>browseMod("Controlify")} steam={steam} preview={library.preview} controllerStatus={nativeStatus.error ?? (nativeStatus.devices.length ? nativeStatus.devices.map(d=>d.name).join("、") : t("No controller detected"))} onViewLogs={()=>viewLogs({})}/> : <section className="placeholder" aria-label={pageLabel(page)}><p>{t("{value0} is not available yet.",{value0:pageLabel(page)})}</p></section>}
+              </div>) : page === "skins" ? (!selectedMicrosoft(accounts.data) ? <section className="skins-page"><p className="skin-notice">{t("Sign in to use skins.")}</p></section> : <SkinsPage library={skins}/>) : page === "accounts" ? <AccountsPage accounts={accounts}/> : managementPages.includes(page) ? (<InstanceContent title={page} instanceId={selected?.id} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}} busy={working} preview={library.preview} hasLoader={!!selected?.loader} refreshKey={JSON.stringify([installer.task?.running,installer.task?.progress.phase,installer.task?.error])} onBrowse={() => changePage(page.replace("instance-",""))} onStarted={()=>void installer.refreshTask()}/>) : ["mods","resource-packs","shaders"].includes(page) ? <ContentBrowser initialQuery={browseQuery} kind={page as ContentKind} item={selected} busy={working} preview={library.preview} onStarted={()=>void installer.refreshTask()} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "launcher-updates" ? (<LauncherUpdates onSettings={()=>{changePage("settings");requestedFocus.current="launcher-update-action";}}/>) : page === "instances" ? <InstancesPage onBrowseModMenu={()=>browseMod("Mod Menu")} library={library} installer={installer} java={java} gameBusy={game.busy} onOpen={open} onViewLogs={item=>viewLogs({instanceId:item.id,label:item.name})} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "settings" ? <SettingsPage onBrowseControllerMod={()=>browseMod("Controlify")} steam={steam} preview={library.preview} controllerStatus={nativeStatus.error ?? (nativeStatus.devices.length ? nativeStatus.devices.map(d=>d.name).join("、") : t("No controller detected"))} onViewLogs={()=>viewLogs({})}/> : <section className="placeholder" aria-label={pageLabel(page)}><p>{t("{value0} is not available yet.",{value0:pageLabel(page)})}</p></section>}
           </div>
+          {updater.locked && <section className="transfer-tray" aria-label={t("Download launcher update")}>
+            <TransferProgress phase={updater.status.phase==="restarting" ? t("Restarting the launcher…") : t("The launcher will restart automatically when the update is ready.")} completed={updater.status.completed} total={updater.status.total}/>
+            <StandardButton id="launcher-cancel-update" disabled={updater.pending==="cancel_launcher_update" || updater.status.phase==="restarting"} onClick={()=>void updater.action("cancel_launcher_update")}>{t("Cancel task")}</StandardButton>
+          </section>}
           {installer.busy && <section className="transfer-tray" aria-label={t(installer.task?.content ? "Content installation task" : "Game installation task")}>
             <TransferProgress phase={installer.task?.cancelling ? t("Cancelling; waiting for the current request\u2026") : `${installer.task?.version ?? ""} · ${localizeMessage(installer.task?.progress.phase || "Preparing installation")}`} completed={installer.task?.progress.completed ?? 0} total={installer.task?.progress.total ?? 0}/>
             <StandardButton id="install-cancel" disabled={!!installer.task?.cancelling} onClick={() => void installer.cancel()}>{t("Cancel task")}</StandardButton>

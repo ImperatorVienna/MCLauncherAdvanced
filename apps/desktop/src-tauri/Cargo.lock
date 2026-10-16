@@ -2041,7 +2041,7 @@ dependencies = [
 
 [[package]]
 name = "mclauncher-advanced"
-version = "1.0.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "flate2",

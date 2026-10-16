@@ -11,12 +11,18 @@ Settings can repeat the check. An inaccessible/missing stable release (HTTP 404)
 is distinct from an up-to-date installed version. Network, rate-limit and invalid
 metadata failures are errors, not a successful check.
 
-The user chooses **Download launcher update**, can cancel the transfer, then
-chooses **Restart and update** after verification. Nothing is silently installed
-or restarted. Checking does not acquire the game/files lock; downloading and
-applying do, so they cannot run during game sessions or other file operations.
-The action button retains its navigation identity across download/ready states.
-Both English and Simplified Chinese status text are provided.
+A newer stable release displays a red sidebar notice. What's new shows the stable
+release body as inert text and a green shortcut to Settings; release content never
+executes HTML. Startup checks do not move focus. The frontend shares one update
+state across Settings, announcements, the sidebar and the task tray.
+
+The user chooses **Download launcher update** and can cancel the transfer. After
+verification the launcher automatically applies the update and restarts. A single
+writer guard spans download, verification and handoff, without an unlocked gap.
+Other page controls are inert during this operation; keyboard and controller focus
+moves to Cancel and returns to the originating action on cancellation/failure.
+Checking does not acquire the game/files lock; downloading cannot begin during a
+game session or another file operation. English and Chinese UI text are provided.
 
 Development binaries cannot replace themselves. Stable builds only accept newer
 stable SemVer releases, never a downgrade or prerelease. Unsupported version

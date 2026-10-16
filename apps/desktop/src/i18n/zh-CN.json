@@ -50,7 +50,6 @@
   "Adapt to Steam launch": "适配 Steam 启动",
   "Use fullscreen and the Steam keyboard when launched through Steam.": "通过 Steam 启动时自动全屏，并启用 Steam 虚拟键盘。",
   "Controller input": "手柄输入",
-  "Native input · D-pad / left stick navigation": "原生输入 · 十字键 / 左摇杆导航",
   "No controller detected": "未检测到手柄",
   "Game installation task": "游戏安装任务",
   "Cancelling; waiting for the current request…": "正在取消，等待当前请求结束…",
@@ -357,8 +356,9 @@
   "No public stable release is available yet.": "目前尚无可用的公开正式版本。",
   "Launcher update available: {version}": "发现启动器新版本：{version}",
   "Downloading launcher update: {percent}%": "正在下载启动器更新：{percent}%",
-  "Update verified. Restart to install; the previous executable will be retained.": "更新已校验。重启后安装，旧版程序将保留。",
   "Restarting the launcher…": "正在重启启动器…",
   "Download launcher update": "下载启动器更新",
-  "Restart and update": "重启并更新"
+  "Go to Settings to update": "前往“设置”中更新",
+  "No release notes were provided.": "此版本未提供更新公告。",
+  "The launcher will restart automatically when the update is ready.": "更新下载并校验完成后，启动器将自动重启。"
 }

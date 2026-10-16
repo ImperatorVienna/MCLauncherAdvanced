@@ -36,7 +36,7 @@ export function SettingsPage({steam,preview,controllerStatus,onViewLogs,onBrowse
             <p>{controllerStatus}</p>
             <p className="settings-description">{t("Install a controller mod such as Controlify to use a controller in game. Availability depends on the selected game version and mod loader.")}</p>
             <StandardButton id="controller-browse-mod" tone="green" onClick={onBrowseControllerMod}>{t("Find Controlify")}</StandardButton>
-            <p className="settings-description">{preview ? t("Controller input is available in the desktop launcher") : t("Native input · D-pad / left stick navigation")}</p>
+            {preview && <p className="settings-description">{t("Controller input is available in the desktop launcher")}</p>}
         </div>
     </section>;
 }

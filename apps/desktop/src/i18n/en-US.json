@@ -50,7 +50,6 @@
   "Adapt to Steam launch": "Adapt to Steam launch",
   "Use fullscreen and the Steam keyboard when launched through Steam.": "Use fullscreen and the Steam keyboard when launched through Steam.",
   "Controller input": "Controller input",
-  "Native input · D-pad / left stick navigation": "Native input · D-pad / left stick navigation",
   "No controller detected": "No controller detected",
   "Game installation task": "Game installation task",
   "Cancelling; waiting for the current request…": "Cancelling; waiting for the current request…",
@@ -357,8 +356,9 @@
   "No public stable release is available yet.": "No public stable release is available yet.",
   "Launcher update available: {version}": "Launcher update available: {version}",
   "Downloading launcher update: {percent}%": "Downloading launcher update: {percent}%",
-  "Update verified. Restart to install; the previous executable will be retained.": "Update verified. Restart to install; the previous executable will be retained.",
   "Restarting the launcher…": "Restarting the launcher…",
   "Download launcher update": "Download launcher update",
-  "Restart and update": "Restart and update"
+  "Go to Settings to update": "Go to Settings to update",
+  "No release notes were provided.": "No release notes were provided.",
+  "The launcher will restart automatically when the update is ready.": "The launcher will restart automatically when the update is ready."
 }
