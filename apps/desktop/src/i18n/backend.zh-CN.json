@@ -298,5 +298,6 @@
   "Update helper did not become ready": "更新辅助进程未能启动。",
   "Update helper failed; see {path}": "更新辅助进程失败，请查看 {path}。",
   "Invalid executable update path": "启动器更新路径无效。",
-  "Invalid update backup path": "旧版程序保留路径无效。"
+  "Invalid update backup path": "旧版程序保留路径无效。",
+  "The new launcher filename already exists; move that file before updating": "新版启动器文件名已存在，请先移走该文件再更新。"
 }

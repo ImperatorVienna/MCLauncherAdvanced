@@ -82,6 +82,6 @@ locates the packaged executable and starts the host-specific replacement helper;
 it has no knowledge of GitHub, release versions or frontend pages.
 
 Linux uses a shell helper; Windows uses an encoded PowerShell helper. Both wait
-for the old process to terminate, retain the filename and `.previous` backup, and
+for the old process to terminate, use the new filename and retain a `.previous` backup, and
 restart in the portable directory with inherited Steam variables. Detailed release
 requirements and validation limits are in `launcher-updates.md`.

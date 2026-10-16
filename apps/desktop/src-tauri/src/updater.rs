@@ -101,8 +101,9 @@ fn apply(app:tauri::AppHandle,updater:Arc<Updater>,backend:Arc<Backend>)->Result
         let directory=i.staged.as_ref().ok_or("Download the launcher update first")?;
         let staged=launcher_install::safe_path(directory.path(),&update.file.path)?;
         if !download::valid_file(&staged,&update.file,&AtomicBool::new(false))? {return Err("Downloaded file verification failed".into());}
-        let (_,destination)=launcher_platform::updater::target()?;
-        launcher_platform::updater::replace_after_exit(&destination,&staged)?;
+        let (_,current)=launcher_platform::updater::target()?;
+        let destination=launcher_install::safe_path(current.parent().ok_or("Invalid executable directory")?,&update.file.path)?;
+        launcher_platform::updater::replace_after_exit(&current,&staged,&destination)?;
         // Helper needs this directory after the launcher exits; retain its diagnostic log.
         let _=i.staged.take().unwrap().keep();
         i.status.phase="restarting".into();

@@ -24,7 +24,7 @@ Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are imp
 - English and Simplified Chinese interfaces; English is the initial default.
 - Per-instance game/installer logs and launcher logs accessible through the interface.
 
-The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings also provides manual checking, verified downloading, and an explicit restart to install the update. The executable keeps its current name and directory; the previous binary is retained with a `.previous` suffix. The temporary test releases exercise this update path. See the [release contract and validation limits](docs/launcher-updates.md).
+The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings also provides manual checking, verified downloading, and an explicit restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. The temporary test releases exercise this update path. See the [release contract and validation limits](docs/launcher-updates.md).
 
 ## Platforms and first launch
 

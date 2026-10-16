@@ -70,6 +70,9 @@ fn main() {
                 .data_directory(webview_data)
                 .fullscreen(active)
                 .build()?;
+            if let Err(error)=launcher_platform::updater::cleanup_completed_update() {
+                logs::record(&format!("Update cache cleanup failed: {error}"));
+            }
             Ok(())
         })
         .on_window_event(|window, event| {

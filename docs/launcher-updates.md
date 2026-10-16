@@ -56,17 +56,18 @@ restores the previous executable. Windows also restores it if process creation
 fails. The previous binary stays beside the new one as `<filename>.previous`;
 an older backup is replaced only when applying another update.
 
-The executable filename is unchanged even if it contains an old version number,
-so the existing portable script and desktop shortcut continue to work. Startup
-refreshes their normal registration. Game directories, Java and user settings
+The replacement uses the new release asset filename. Startup refreshes the
+portable script or remembered EXE name; the desktop shortcut still targets the
+stable script. An existing destination file blocks the update without overwriting
+it. Game directories, Java and user settings
 are not moved. Restart preserves inherited Steam identifiers; Linux clears the
 old AppImage mount variables before starting the replacement.
 
 The helper writes `.launcher-update-*/apply.log` next to the launcher. If the new
 application starts but later fails, the updater does not infer application health
 or automatically revert data. With the launcher closed, the retained `.previous`
-file can be renamed to the original executable name for manual recovery. The
-helper directory/log is retained for diagnosis. Interrupted staged downloads
+file can be renamed to the original executable name for manual recovery. After successful startup the complete helper directory is removed, including
+logs and temporary files. Failed updates retain diagnostics. Interrupted staged downloads
 never replace the installed executable.
 
 ## Validation
