@@ -8,7 +8,7 @@ An independent desktop launcher with keyboard, mouse and controller navigation, 
 
 ## Release status
 
-Versions **1.0.0** and **1.0.1** are temporary public releases for testing launcher self-update. They use Microsoft sign-in and are not an announcement of completed service approval. Version 1.0.1 will be removed after update testing.
+Version **1.0.0** is available for Linux and Windows x86_64. Game sessions require Microsoft sign-in; publishing the launcher does not imply completed Minecraft API access approval.
 
 Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are implemented. **Minecraft API access approval for this application's client ID is pending**; Minecraft may reject the application until access is granted. Successful Microsoft sign-in alone does not establish that Minecraft authentication or game launch has succeeded. The submission edition requires an account entitled to Minecraft: Java Edition.
 
@@ -24,7 +24,7 @@ Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are imp
 - English and Simplified Chinese interfaces; English is the initial default.
 - Per-instance game/installer logs and launcher logs accessible through the interface.
 
-The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings also provides manual checking, verified downloading, and an explicit restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. The temporary test releases exercise this update path. See the [release contract and validation limits](docs/launcher-updates.md).
+The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings also provides manual checking, verified downloading, and automatic restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. See the [release contract and validation limits](docs/launcher-updates.md).
 
 ## Platforms and first launch
 

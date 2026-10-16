@@ -1093,7 +1093,7 @@ html[lang="en-US"] .play span { letter-spacing: 0; line-height: 1.4; overflow-wr
 
 /* Update notices share the settings spacing and existing button/focus treatment. */
 .side-item { position: relative; }
-.update-badge { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%; background: #c63032; display: grid; place-items: center; }
+.update-badge { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 20px; height: 20px; background: #c63032; display: grid; place-items: center; }
 .update-badge > span { width: 4px; height: 8px; background: white; position: relative; transform: translateY(-2px); }
 .update-badge > span::after { content: ""; position: absolute; width: 4px; height: 3px; left: 0; top: 10px; background: white; }
 .release-notes { white-space: pre-wrap; overflow-wrap: anywhere; color: #b8b6b4; }

@@ -3,7 +3,10 @@ import { invokeNative, isDesktop } from "../platform/desktop";
 export type UpdateStatus = {phase:string;version:string|null;completed:number;total:number;error:string|null;announcement?:{version:string;body:string}|null};
 const initial:UpdateStatus={phase:"idle",version:null,completed:0,total:0,error:null};
 function useUpdateState(){
-    const [status,setStatus]=useState(initial),[error,setError]=useState(""),[pending,setPending]=useState("");
+    const [status,setStatus]=useState<UpdateStatus>(()=>
+        import.meta.env.DEV && !isDesktop() && new URLSearchParams(window.location.search).get("updateDemo")==="notice"
+            ? {...initial,phase:"available",version:"1.0.2",announcement:{version:"1.0.2",body:""}}
+            : initial),[error,setError]=useState(""),[pending,setPending]=useState("");
     const alive=useRef(false),inFlight=useRef(false),generation=useRef(0);
     useEffect(()=>{
         alive.current=true;
