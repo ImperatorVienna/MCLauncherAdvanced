@@ -1,6 +1,6 @@
 [package]
 name = "mclauncher-advanced"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "A third-party powered launcher for Minecraft Java Edition with an interface similar to the official."
 [build-dependencies]
