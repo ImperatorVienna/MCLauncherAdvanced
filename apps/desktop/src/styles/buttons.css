@@ -1,0 +1,70 @@
+/* Sampled from user-supplied official button reference PNGs. See docs/ui-reference/buttons.md. */
+.standard-button[data-tone="white"] {
+  --button-face: #D0C5C0;
+  --button-edge-light: #ECE8E6;
+  --button-edge-mid: #E3DCD9;
+  --button-depth: #ABA09C;
+  --button-text: #262423;
+  --button-pressed-face: #ABA09C;
+  --button-pressed-light: #DDD9D7;
+  --button-pressed-mid: #CDC6C4;
+}
+.standard-button[data-tone="green"] {
+  --button-face: #3C8527;
+  --button-edge-light: #639D52;
+  --button-edge-mid: #50913D;
+  --button-depth: #2A641C;
+  --button-text: #FFFFFF;
+  --button-pressed-face: #2A641C;
+  --button-pressed-light: #558349;
+  --button-pressed-mid: #407433;
+}
+.standard-button[data-tone="red"] {
+  --button-face: #CA3636;
+  --button-edge-light: #D55E5E;
+  --button-edge-mid: #CF4A4A;
+  --button-depth: #AD1D1D;
+  --button-text: #FFFFFF;
+  --button-pressed-face: #AD1D1D;
+  --button-pressed-light: #BD4A4A;
+  --button-pressed-mid: #B53434;
+}
+.standard-button[data-tone="yellow"] {
+  --button-face: #E2B923;
+  --button-edge-light: #EED57B;
+  --button-edge-mid: #E8C74F;
+  --button-depth: #B87918;
+  --button-text: #000000;
+  --button-pressed-face: #B87918;
+  --button-pressed-light: #D4AF74;
+  --button-pressed-mid: #C69446;
+}
+.standard-button {
+  background: var(--button-face);
+  color: var(--button-text);
+  border: 2px solid;
+  border-color: var(--button-edge-light) var(--button-edge-mid) var(--button-edge-mid) var(--button-edge-light);
+  border-radius: 0;
+  box-shadow: 0 6px 0 var(--button-depth);
+  padding: 6px 16px;
+  min-height: 28px;
+  margin-bottom: 6px;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+}
+.standard-button:hover { background: var(--button-face); }
+.standard-button:active:not(:is(:disabled, [aria-disabled="true"])) {
+  background: var(--button-pressed-face);
+  border-color: var(--button-pressed-light) var(--button-pressed-mid) var(--button-pressed-mid) var(--button-pressed-light);
+  box-shadow: 0 2px 0 var(--button-depth);
+  outline: 3px solid #fff;
+  outline-offset: 0;
+  transform: translateY(4px);
+  filter: none;
+}
+/* Pressed feedback is distinct from the controller-only focus ring. */
+html:not([data-input-mode="gamepad"]) .standard-button:active:not(:is(:disabled, [aria-disabled="true"])) {
+  outline: 3px solid #fff;
+  outline-offset: 0;
+}

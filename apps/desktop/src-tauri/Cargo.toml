@@ -1,0 +1,24 @@
+[package]
+name = "mclauncher-advanced"
+version = "1.0.0"
+edition = "2021"
+description = "A third-party powered launcher for Minecraft Java Edition with an interface similar to the official."
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+[dependencies]
+launcher-platform = { path = "../../../crates/launcher-platform" }
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "json", "form", "rustls", "system-proxy"] }
+tempfile = "3"
+flate2 = "1"
+md5 = "0.7"
+base64 = "0.22"
+png = "0.17"
+gilrs = "0.11.2"
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+launcher-core = { path = "../../../crates/launcher-core" }
+launcher-install = { path = "../../../crates/launcher-install" }
+
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }

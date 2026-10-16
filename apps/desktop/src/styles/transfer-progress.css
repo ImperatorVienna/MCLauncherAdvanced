@@ -1,0 +1,19 @@
+.transfer-progress { width: 100%; margin: 24px 0; }
+.transfer-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+.transfer-caption strong { color: #b4df83; font-variant-numeric: tabular-nums; }
+.transfer-track { height: 26px; padding: 3px; background: #151411; border: 2px solid; border-color: #080807 #5b5750 #5b5750 #080807; overflow: hidden; }
+.transfer-fill { height: 100%; min-width: 0; background: repeating-linear-gradient(90deg, transparent 0 22px, #0002 22px 24px), #3d8527; box-shadow: inset 0 3px #8acb56, inset 0 -4px #235315; transition: width 150ms linear; }
+.transfer-bytes { margin-top: 9px; color: #b8b3aa; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+.transfer-track.indeterminate .transfer-fill { width: 28%; animation: transfer-scan 1.4s ease-in-out infinite alternate; }
+@keyframes transfer-scan { from { transform: translateX(-100%); } to { transform: translateX(360%); } }
+@media (prefers-reduced-motion: reduce) { .transfer-fill { transition: none; } .transfer-track.indeterminate .transfer-fill { animation: none; width: 100%; opacity: .55; } }
+.storage-path { overflow-wrap: anywhere; }
+/* A real flex row, never an overlay: page-scroll and its scrollbar shrink above it. */
+.transfer-tray { flex: 0 0 auto; min-width: 0; padding: 16px 24px 12px; background: #242220; border-top: 2px solid #080807; box-shadow: inset 0 1px #514d47; }
+.transfer-tray .transfer-progress { margin: 0; }
+/* During blocking migration only the bottom tray is visible; clicks remain blocked. */
+.modal-backdrop.migration-running { background: transparent; }
+.migration-running .dialog { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); box-shadow: none; }
+/* Allow the grid's flex child to shrink instead of growing the window scrollbar. */
+.workspace { min-height: 0; overflow: hidden; }
+.workspace > header, .workspace > .tabs, .workspace > footer { flex-shrink: 0; }
