@@ -16,4 +16,4 @@
 .migration-running .dialog { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); box-shadow: none; }
 /* Allow the grid's flex child to shrink instead of growing the window scrollbar. */
 .workspace { min-height: 0; overflow: hidden; }
-.workspace > header, .workspace > .tabs, .workspace > footer { flex-shrink: 0; }
+.workspace > header, .workspace > .tabs { flex-shrink: 0; }

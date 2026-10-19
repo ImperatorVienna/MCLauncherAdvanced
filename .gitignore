@@ -17,3 +17,6 @@ session.lock
 .minecraft/
 webview/
 runtimes/
+
+# Local-only test branch and its build workspace
+test-builds/

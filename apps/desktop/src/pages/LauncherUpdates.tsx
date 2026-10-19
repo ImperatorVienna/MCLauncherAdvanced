@@ -4,7 +4,7 @@ import { useLauncherUpdate } from "../state/launcherUpdate";
 export function LauncherUpdates({onSettings}:{onSettings:()=>void}) {
     const {status,error}=useLauncherUpdate();
     return <section className="placeholder settings-page launcher-announcements" aria-label={t("Launcher updates")}>
-        {status.version&&<div><StandardButton id="announcement-settings" tone="green" onClick={onSettings}>{t("Go to Settings to update")}</StandardButton></div>}
+        {status.version&&<div><StandardButton id="announcement-settings" tone="green" onClick={onSettings}>{t("Go to About to update")}</StandardButton></div>}
         {status.announcement ? <div className="settings-group">
             <span>{t("Launcher version: {version}",{version:status.announcement.version})}</span>
             <p className="release-notes">{status.announcement.body || t("No release notes were provided.")}</p>

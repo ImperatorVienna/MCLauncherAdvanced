@@ -1,4 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod editorial_commands;
 mod updater;
 mod content_commands;
 mod content_downloads;
@@ -94,6 +95,7 @@ fn main() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            editorial_commands::official_content, editorial_commands::open_information_link,
             updater::launcher_update_status, updater::check_launcher_update, updater::download_launcher_update, updater::cancel_launcher_update,
             content_downloads::identify_instance_content,
             content_downloads::search_instance_content,

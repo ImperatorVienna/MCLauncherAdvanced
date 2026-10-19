@@ -436,24 +436,6 @@ h1 {
   color: #aaa;
   margin-top: 9px;
 }
-footer {
-  min-height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px 22px;
-  font-size: 10px;
-  color: #aaa;
-  background: #222;
-  gap: 16px;
-}
-kbd {
-  font-family: inherit;
-  background: #3f3f3f;
-  padding: 2px 4px;
-  color: #ddd;
-  margin: 0 3px;
-}
 .placeholder {
   padding: var(--settings-gap);
   min-height: 0;
@@ -599,7 +581,6 @@ h1 { font-size: 13px; letter-spacing: 0; }
 .card-copy { padding: 12px 2px; }
 .card-copy h3 { font-size: 12px; }
 .card-copy p { display: none; }
-footer { min-height: 26px; padding: 5px 15px; background: #242220; }
 @media(max-width:1100px) {
   .shell { grid-template-columns: 168px minmax(0,1fr); }
   .play-bar { grid-template-columns: 1fr 200px 1fr; }
@@ -836,18 +817,23 @@ html:not([data-input-mode="gamepad"]) button:focus-visible {
   .play-layout .play-bar { grid-template-columns: minmax(0, 1fr) 180px; }
 }
 
-.steam-error { color: #f2b8b5; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Keep the version trigger inside the bar, independently of the raised Play button. */
 .play-layout .select-menu { align-self: center; height: 49px; max-height: 100%; }
 .play-layout .select-menu > .select-trigger { height: 100%; min-height: 0; }
 .play:is(:disabled, [aria-disabled="true"]) { opacity: 1; filter: drop-shadow(0 5px 0 #1e1d1c); color: #aaa6a2; text-shadow: none; }
 .play:is(:disabled, [aria-disabled="true"])::after { background: #304b24; box-shadow: inset 0 4px #4e683e, inset 4px 0 #253d1d, inset -4px 0 #253d1d, inset 0 -4px #253d1d; }
-.controller-hints { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.face-key { width: 22px; height: 22px; flex: none; }
-.face-key circle { fill: #575450; stroke: #aaa6a2; stroke-width: 1; }
-.face-key .lit { fill: #fff; stroke: #fff; }
-
+/* Informational diagrams do not register navigation targets. */
+.controller-guides { display: flex; flex-direction: column; gap: var(--settings-gap); width: 100%; min-width: 0; }
+.controller-guide { min-width: 0; }
+.controller-guide-name { overflow-wrap: anywhere; }
+.controller-guide-body { display: flex; flex-wrap: wrap; align-items: center; gap: var(--settings-gap); }
+.controller-model { width: min(360px, 100%); height: auto; flex-shrink: 0; }
+.controller-model text { fill: white; font: 14px sans-serif; text-anchor: middle; }
+.controller-bindings { margin: 0; display: grid; gap: 8px; flex: 1 1 250px; max-width: 460px; min-width: 0; }
+.controller-bindings > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: center; min-height: 26px; }
+.controller-bindings dt, .controller-bindings dd { margin: 0; overflow-wrap: anywhere; display: flex; align-items: center; min-height: 1.5em; line-height: 1.5; }
+.controller-bindings dd { color: #b8b6b4; }
 .installation-details { display: grid; gap: var(--settings-gap); min-width: 0; }
 .java-path { display: block; overflow-wrap: anywhere; margin: 0; }
 .official-versions { display: grid; gap: var(--settings-gap); margin: 0; }
@@ -1097,3 +1083,9 @@ html[lang="en-US"] .play span { letter-spacing: 0; line-height: 1.4; overflow-wr
 .update-badge > span { width: 4px; height: 8px; background: white; position: relative; transform: translateY(-2px); }
 .update-badge > span::after { content: ""; position: absolute; width: 4px; height: 3px; left: 0; top: 10px; background: white; }
 .release-notes { white-space: pre-wrap; overflow-wrap: anywhere; color: #b8b6b4; }
+
+.settings-page { min-width: 0; overflow-wrap: anywhere; }
+
+.controller-model .controller-shoulder-label text { font-size: 11px; font-weight: 600; letter-spacing: .5px; }
+
+.controller-legend-symbol { width: 1em; height: 1em; display: block; flex-shrink: 0; color: currentColor; }

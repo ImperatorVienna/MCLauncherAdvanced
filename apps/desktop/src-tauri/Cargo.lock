@@ -1922,8 +1922,10 @@ name = "launcher-platform"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
+ "gilrs",
  "launcher-core",
  "libc",
+ "serde",
  "windows-sys 0.61.2",
 ]
 
@@ -2041,11 +2043,10 @@ dependencies = [
 
 [[package]]
 name = "mclauncher-advanced"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "base64 0.22.1",
  "flate2",
- "gilrs",
  "launcher-core",
  "launcher-install",
  "launcher-platform",

@@ -1,4 +1,5 @@
 //! Installer core: no UI, authentication, shell scripts or game process launching.
+pub mod editorial;
 pub mod self_update;
 pub mod content;
 pub mod content_source;

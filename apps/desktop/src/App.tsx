@@ -1,3 +1,7 @@
+import { LegalDialog } from "./components/LegalDialog";
+import { version } from "../src-tauri/tauri.conf.json";
+import { AboutPage } from "./pages/AboutPage";
+import { OfficialNews, GamePatchNotes } from "./components/OfficialContent";
 import { LauncherUpdateProvider, useLauncherUpdate } from "./state/launcherUpdate";
 import { ContentBrowser } from "./pages/ContentBrowser";
 import { type ContentKind } from "./state/contentSource";
@@ -17,7 +21,6 @@ import { keyboardAction } from "./input/actions";
 import { useSteamSession } from "./input/steamSession";
 import { isTextEntry } from "./input/textEntry";
 import { installNativeController, type NativeStatus } from "./input/nativeController";
-import { ControllerHints } from "./components/ControllerHints";
 import { InstanceContent, managementPages } from "./pages/InstanceContent";
 import { InstanceIcon } from "./components/InstanceIcon";
 import { useLibrary, labelOf, type Instance } from "./state/library";
@@ -37,6 +40,7 @@ import heroLogo from "./assets/mclogo-java.png";
 import "./styles/app.css";
 const tabs = ["play", "instances", ...managementPages, "patch-notes"];
 const accountTabs = ["accounts", "skins"];
+const settingsTabs = ["settings", "about"];
 export function App() { return <LauncherUpdateProvider><AppContent/></LauncherUpdateProvider>; }
 function AppContent() {
     const updater=useLauncherUpdate();
@@ -54,8 +58,8 @@ function AppContent() {
     const pageRef = useRef(page);
     const lastGamePage = useRef("play");
     const lastAccountPage = useRef("accounts");
-    const currentTabs = tabs.includes(page) ? tabs : accountTabs.includes(page) ? accountTabs : [page];
-    const [modal, setModal] = useState<"create" | "edit" | "delete" | "logs" | null>(null);
+    const currentTabs = tabs.includes(page) ? tabs : accountTabs.includes(page) ? accountTabs : settingsTabs.includes(page) ? settingsTabs : [page];
+    const [modal, setModal] = useState<"create" | "edit" | "delete" | "logs" | "license" | "notices" | null>(null);
     const library = useLibrary();
     const [logRequest,setLogRequest]=useState<LogRequest>({});
     function viewLogs(request:LogRequest) {
@@ -94,6 +98,7 @@ function AppContent() {
             setModal(null);
     }
     const [nativeStatus, setNativeStatus] = useState<NativeStatus>({ devices: [], error: null });
+    const [controllerGuide,setControllerGuide]=useState("");
     const [source, setSource] = useState("keyboard-mouse");
     const controllerInput = source === "controller";
     const main = useRef<HTMLElement>(null);
@@ -104,7 +109,7 @@ function AppContent() {
         setModal(kind);
     }
     function close() {
-        if (modal === "logs") { setModal(null); return; }
+        if (modal === "logs" || modal === "license" || modal === "notices") { setModal(null); return; }
         if (busyRef.current)
             return;
         library.clearError();
@@ -117,7 +122,7 @@ function AppContent() {
             return;
         setBrowseQuery("");
         const old = pageRef.current;
-        const owner = tabs.includes(old) ? "nav-java" : accountTabs.includes(old) ? "account" : `nav-${old}`;
+        const owner = tabs.includes(old) ? "nav-java" : accountTabs.includes(old) ? "account" : settingsTabs.includes(old) ? "nav-settings" : `nav-${old}`;
         const active = manager.activeId();
         // A clicked destination sidebar button is not the previous page's focus.
         const focus = active === "account" || active?.startsWith("nav-") ? owner
@@ -148,7 +153,7 @@ function AppContent() {
             previousPage(); };
         manager.onTab = (delta) => {
             const old = pageRef.current;
-            const group = tabs.includes(old) ? tabs : accountTabs.includes(old) ? accountTabs : [];
+            const group = tabs.includes(old) ? tabs : accountTabs.includes(old) ? accountTabs : settingsTabs.includes(old) ? settingsTabs : [];
             if (group.length) {
                 const next = group[(group.indexOf(old) + delta + group.length) % group.length];
                 if (manager.activeId() === `tab-${old}`)
@@ -170,7 +175,7 @@ function AppContent() {
             lastGamePage.current = page;
         if (accountTabs.includes(page))
             lastAccountPage.current = page;
-        manager.sidebarEntryId = tabs.includes(page) ? "nav-java" : accountTabs.includes(page) ? "account" : `nav-${page}`;
+        manager.sidebarEntryId = tabs.includes(page) ? "nav-java" : accountTabs.includes(page) ? "account" : settingsTabs.includes(page) ? "nav-settings" : `nav-${page}`;
         manager.activeTabId = `tab-${page}`;
         // Page changes must not steal focus from a control that still exists.
         if (!modal) {
@@ -179,7 +184,7 @@ function AppContent() {
                 requestedFocus.current = undefined;
             }
             else {
-                manager.preserveFocus(tabs.includes(page) || accountTabs.includes(page) ? `tab-${page}` : `nav-${page}`);
+                manager.preserveFocus(tabs.includes(page) || accountTabs.includes(page) || settingsTabs.includes(page) ? `tab-${page}` : `nav-${page}`);
             }
         }
     }, [page, manager]);
@@ -213,7 +218,8 @@ function AppContent() {
     useLayoutEffect(() => {
         if (library.preview)
             return;
-        return installNativeController((action) => {
+        return installNativeController((action,device) => {
+            setControllerGuide(device.name);
             window.dispatchEvent(new CustomEvent("launcher:input-takeover", { detail: "native" }));
             setSource("controller");
             manager.resumeControllerFocus();
@@ -285,15 +291,16 @@ function AppContent() {
             </SidebarButton>))}
           <div className="sidebar-bottom">
             <SidebarButton id="nav-launcher-updates" selected={page === "launcher-updates"} icon={<span className="side-symbol">▤</span>} onClick={() => changePage("launcher-updates")}>{t("What's new?")}{updater.status.version&&<span className="update-badge" role="img" aria-label={t("Launcher update available: {version}",{version:updater.status.version})}><span aria-hidden="true"/></span>}</SidebarButton>
-            <SidebarButton id="nav-settings" selected={page === "settings"} icon={<span className="side-symbol">⚙</span>} onClick={() => changePage("settings")}>{t("Settings")}</SidebarButton>
-            <p>{t("Unofficial launcher \u00B7 In development")}</p>
+            <SidebarButton id="nav-settings" selected={settingsTabs.includes(page)} icon={<span className="side-symbol">⚙</span>} onClick={() => changePage("settings")}>{t("Settings")}</SidebarButton>
+            <p>MC Launcher Advanced v{version}</p>
           </div>
         </aside>
         <section className="workspace">
           <header>
-            <h1>{tabs.includes(page) ? "MINECRAFT: JAVA EDITION" : accountTabs.includes(page) ? pageLabel("accounts") : pageLabel(page)}</h1>
+            <h1>{tabs.includes(page) ? "MINECRAFT: JAVA EDITION" : accountTabs.includes(page) ? pageLabel("accounts") : settingsTabs.includes(page) ? pageLabel("settings") : pageLabel(page)}</h1>
             {library.preview && <span className="prototype">{t("Browser preview")}</span>}
           </header>
+          {steam.error && <p role="alert" className="config-error page-notice">{steam.error}</p>}
           {currentTabs.length > 0 && <nav className="tabs" aria-label={accountTabs.includes(page) ? t("Account pages") : tabs.includes(page) ? t("Java Edition pages") : t("{value0} page", { value0: pageLabel(page) })}>
             {currentTabs.map((tab) => (<Control id={`tab-${tab}`} group="tabs" key={tab} className={page === tab ? "active" : ""} aria-current={page === tab ? "page" : undefined} onClick={() => changePage(tab)}>
                 {tabLabel(tab)}
@@ -318,20 +325,8 @@ function AppContent() {
                     {installed?.installed ? t("Game installed") : t("Game not installed")}<small>{installer.busy ? t("Installation in progress") : (accountName(accounts.data) ?? t("No account connected"))}</small>
                   </div>
                 </section>
-                <section className="news">
-                  <div className="cards">
-                    {/* Reserved for future official or third-party promotions.
-                No provider, external assets, requests, or links yet. */}
-                    {Array.from({ length: 5 }, (_, i) => (<article key={i} aria-label={t("Promotion placeholder {value0}", { value0: i + 1 })}>
-                        <div className={`card-art art-${i}`} aria-hidden="true"/>
-                        <div className="card-copy">
-                          <small>{t("Not available yet")}</small>
-                          <h3>{t("News")}</h3>
-                        </div>
-                      </article>))}
-                  </div>
-                </section>
-              </div>) : page === "skins" ? (!selectedMicrosoft(accounts.data) ? <section className="skins-page"><p className="skin-notice">{t("Sign in to use skins.")}</p></section> : <SkinsPage library={skins}/>) : page === "accounts" ? <AccountsPage accounts={accounts}/> : managementPages.includes(page) ? (<InstanceContent title={page} instanceId={selected?.id} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}} busy={working} preview={library.preview} hasLoader={!!selected?.loader} refreshKey={JSON.stringify([installer.task?.running,installer.task?.progress.phase,installer.task?.error])} onBrowse={() => changePage(page.replace("instance-",""))} onStarted={()=>void installer.refreshTask()}/>) : ["mods","resource-packs","shaders"].includes(page) ? <ContentBrowser initialQuery={browseQuery} kind={page as ContentKind} item={selected} busy={working} preview={library.preview} onStarted={()=>void installer.refreshTask()} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "launcher-updates" ? (<LauncherUpdates onSettings={()=>{changePage("settings");requestedFocus.current="launcher-update-action";}}/>) : page === "instances" ? <InstancesPage onBrowseModMenu={()=>browseMod("Mod Menu")} library={library} installer={installer} java={java} gameBusy={game.busy} onOpen={open} onViewLogs={item=>viewLogs({instanceId:item.id,label:item.name})} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "settings" ? <SettingsPage onBrowseControllerMod={()=>browseMod("Controlify")} steam={steam} preview={library.preview} controllerStatus={nativeStatus.error ?? (nativeStatus.devices.length ? nativeStatus.devices.map(d=>d.name).join("、") : t("No controller detected"))} onViewLogs={()=>viewLogs({})}/> : <section className="placeholder" aria-label={pageLabel(page)}><p>{t("{value0} is not available yet.",{value0:pageLabel(page)})}</p></section>}
+                <OfficialNews/>
+              </div>) : page === "patch-notes" ? <GamePatchNotes key={selected?.minecraftVersion ?? "none"} version={selected?.minecraftVersion}/> : page === "skins" ? (!selectedMicrosoft(accounts.data) ? <section className="skins-page"><p className="skin-notice">{t("Sign in to use skins.")}</p></section> : <SkinsPage library={skins}/>) : page === "accounts" ? <AccountsPage accounts={accounts}/> : managementPages.includes(page) ? (<InstanceContent title={page} instanceId={selected?.id} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}} busy={working} preview={library.preview} hasLoader={!!selected?.loader} refreshKey={JSON.stringify([installer.task?.running,installer.task?.progress.phase,installer.task?.error])} onBrowse={() => changePage(page.replace("instance-",""))} onStarted={()=>void installer.refreshTask()}/>) : ["mods","resource-packs","shaders"].includes(page) ? <ContentBrowser initialQuery={browseQuery} kind={page as ContentKind} item={selected} busy={working} preview={library.preview} onStarted={()=>void installer.refreshTask()} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "launcher-updates" ? (<LauncherUpdates onSettings={()=>{changePage("about");requestedFocus.current="launcher-update-action";}}/>) : page === "instances" ? <InstancesPage onBrowseModMenu={()=>browseMod("Mod Menu")} library={library} installer={installer} java={java} gameBusy={game.busy} onOpen={open} onViewLogs={item=>viewLogs({instanceId:item.id,label:item.name})} selection={{options:instanceOptions,value:instanceLabel,onChange:selectInstance,iconForOption,statusForOption}}/> : page === "about" ? <AboutPage onDocument={open}/> : page === "settings" ? <SettingsPage controllerSelection={controllerGuide} onControllerSelection={setControllerGuide} onBrowseControllerMod={()=>browseMod("Controlify")} steam={steam} preview={library.preview} controllerDevices={nativeStatus.devices.map(d=>d.name)} controllerError={nativeStatus.error ?? undefined} onViewLogs={()=>viewLogs({})}/> : <section className="placeholder" aria-label={pageLabel(page)}><p>{t("{value0} is not available yet.",{value0:pageLabel(page)})}</p></section>}
           </div>
           {updater.locked && <section className="transfer-tray" aria-label={t("Download launcher update")}>
             <TransferProgress phase={updater.status.phase==="restarting" ? t("Restarting the launcher…") : t("The launcher will restart automatically when the update is ready.")} completed={updater.status.completed} total={updater.status.total}/>
@@ -342,20 +337,15 @@ function AppContent() {
             <StandardButton id="install-cancel" disabled={!!installer.task?.cancelling} onClick={() => void installer.cancel()}>{t("Cancel task")}</StandardButton>
           </section>}
           {!installer.busy && installer.task?.content && installer.task.error && <section className="transfer-tray config-error" role="alert">{localizeMessage(installer.task.error)}</section>}
-          <footer>
-            {steam.error && <span role="alert" className="steam-error">{steam.error}</span>}
-            <span>
-              {controllerInput ? <ControllerHints /> : <><kbd>↑↓←→</kbd>{t("Navigate")}<kbd>Enter</kbd>{t("Confirm")}<kbd>Esc</kbd>{t("Back")}</>}
-            </span>
-          </footer>
+
         </section>
       </main>
       {modal ? (<div className="modal-backdrop" onPointerDown={event => {
                 if (event.target === event.currentTarget)
                     close();
             }}>
-          <section ref={element => { manager.modalContainer = element; }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" className={modal === "logs" ? "dialog log-dialog" : "dialog"}>
-            {modal === "logs" ? <LogDialog request={logRequest} onClose={close}/> : modal === "create" || modal === "edit" ? <InstanceEditor java={java} onJavaInstall={major => void installer.startJava(major)} preview={library.preview} item={modal === "edit" ? selected : undefined} busy={working} onCancelTask={() => void installer.cancel()} taskRunning={installer.busy} error={library.error || installer.error || localizeMessage(installer.task?.error)} onSave={saveInstance} onCancel={close}/> : modal === "delete" ? <>
+          <section ref={element => { manager.modalContainer = element; }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" className={modal === "logs" || modal === "license" || modal === "notices" ? "dialog log-dialog" : "dialog"}>
+            {modal === "license" || modal === "notices" ? <LegalDialog kind={modal} onClose={close}/> : modal === "logs" ? <LogDialog request={logRequest} onClose={close}/> : modal === "create" || modal === "edit" ? <InstanceEditor java={java} onJavaInstall={major => void installer.startJava(major)} preview={library.preview} item={modal === "edit" ? selected : undefined} busy={working} onCancelTask={() => void installer.cancel()} taskRunning={installer.busy} error={library.error || installer.error || localizeMessage(installer.task?.error)} onSave={saveInstance} onCancel={close}/> : modal === "delete" ? <>
               <h2 id="dialog-title">{t("Delete instance")}</h2>
               <p>{t("Delete instance {name}? Its directory and all saves, mods, resource packs, shaders, and settings will be permanently deleted.", {name: selected?.name ?? ""})}</p>
               <p className="java-path">{t("Directory:")}{installed?.gameDirectory ?? `.minecraft/versions/${selected?.directoryName}`}</p>

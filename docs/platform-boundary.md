@@ -84,3 +84,25 @@ Linux uses a shell helper; Windows uses an encoded PowerShell helper. Both wait
 for the old process to terminate, use the new filename and retain a `.previous` backup, and
 restart in the portable directory with inherited Steam variables. Detailed release
 requirements and validation limits are in `launcher-updates.md`.
+
+## Official editorial content
+
+`launcher-install::editorial` owns Mojang feed endpoints, bounded HTTP reads and
+allowed information-link destinations. Tauri exposes asynchronous read-only IPC
+and dispatches approved URLs to the existing platform external-open mechanism.
+The frontend owns per-version selection, session caching, stale-response guards,
+Java news filtering, inert article rendering, localization and navigation. No
+remote HTML is inserted into the WebView; supported links become registered
+controls. Only the official content image origin is allowed by CSP. The Vite
+proxy is a development-only equivalent of native feed reads. Feed availability
+is not required for game installation or launch. These public endpoints are
+external dependencies, not a guaranteed API contract.
+
+## Native controller acquisition
+
+`launcher-platform::gamepad` owns Linux/Windows gilrs acquisition, physical
+button/axis snapshots, device inventory and bounded transport buffering. Gilrs
+selects its Linux backend or the explicitly enabled Windows WGI backend. Tauri
+only supplies window-focus suspension and exposes polling IPC. Frontend routing,
+neutral rearming, repeat timing, model illustrations and page/focus decisions
+remain in the frontend. No controller dependency is introduced into core.

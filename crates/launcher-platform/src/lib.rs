@@ -1,4 +1,6 @@
 //! Host operating-system adapters. No game, account or UI policy belongs here.
+#[cfg(any(target_os="linux",windows))]
+pub mod gamepad;
 use std::path::{Path,PathBuf};
 #[cfg(target_os="linux")]
 pub mod linux;

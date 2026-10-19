@@ -7,5 +7,6 @@
     "test": "pnpm --dir apps/desktop test",
     "tauri": "pnpm --dir apps/desktop tauri"
   },
-  "packageManager": "pnpm@11.25.0"
+  "packageManager": "pnpm@11.25.0",
+  "license": "GPL-3.0-only"
 }

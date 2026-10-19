@@ -13,7 +13,14 @@ test("language selection updates in place and restores keyboard/controller focus
     const host=document.createElement("div");document.body.append(host);
     const root=createRoot(host),manager=new FocusManager();
     const steam={ready:true,saving:false,status:{enabled:false,active:false},toggle:vi.fn()} as unknown as Parameters<typeof SettingsPage>[0]["steam"];
-    await act(async()=>root.render(<Navigation.Provider value={manager}><SettingsPage steam={steam} preview controllerStatus="Device" onViewLogs={()=>{}} onBrowseControllerMod={()=>{}}/></Navigation.Provider>));
+    await act(async()=>root.render(<Navigation.Provider value={manager}><SettingsPage steam={steam} preview controllerDevices={["Device A", "Device B"]} onViewLogs={()=>{}} onBrowseControllerMod={()=>{}}/></Navigation.Provider>));
+    expect(host.querySelectorAll(".controller-model")).toHaveLength(1);
+    act(()=>manager.focus("controller-device"));
+    act(()=>manager.dispatch("Confirm"));
+    act(()=>manager.dispatch("NavigateDown"));
+    await act(async()=>manager.dispatch("Confirm"));
+    expect(host.querySelector(".controller-guide-name")?.textContent).toBe("DualSense Wireless Controller");
+    expect(manager.activeId()).toBe("controller-device");
     act(()=>manager.focus("launcher-language"));
     act(()=>manager.dispatch("Confirm"));
     act(()=>manager.dispatch("NavigateDown"));
@@ -29,6 +36,31 @@ test("language selection updates in place and restores keyboard/controller focus
     expect(host.textContent).toContain("Content download source");
     expect(host.querySelector("#offline-accounts-enabled")).toBeNull();
     expect(manager.activeId()).toBe("launcher-language");
+    await act(async()=>root.render(<Navigation.Provider value={manager}><SettingsPage steam={steam} preview={false} controllerDevices={[]} onViewLogs={()=>{}} onBrowseControllerMod={()=>{}}/></Navigation.Provider>));
+    expect(host.querySelector(".controller-model")).toBeNull();
+    expect(host.querySelector("#controller-device")?.textContent?.trim()).toBe("⌄");
+    expect(host.querySelector("#controller-device")?.getAttribute("aria-disabled")).toBe("true");
     act(()=>root.unmount());host.remove();
 });
 
+test("active device changes update the guide without opening the menu or moving focus",async()=>{
+    Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+    const host=document.createElement("div");document.body.append(host);
+    const root=createRoot(host),manager=new FocusManager();
+    const steam={ready:true,saving:false,status:{enabled:false,active:false},toggle:vi.fn()} as unknown as Parameters<typeof SettingsPage>[0]["steam"];
+    const render=(selection:string)=><Navigation.Provider value={manager}><SettingsPage steam={steam} preview={false} controllerDevices={["Xbox Controller","DualSense"]} controllerSelection={selection} onControllerSelection={()=>{}} onViewLogs={()=>{}} onBrowseControllerMod={()=>{}}/></Navigation.Provider>;
+    await act(async()=>root.render(render("Xbox Controller")));
+    act(()=>manager.focus("controller-browse-mod"));
+    await act(async()=>root.render(render("DualSense")));
+    expect(host.querySelector(".controller-guide-name")?.textContent).toBe("DualSense");
+    expect(manager.activeId()).toBe("controller-browse-mod");
+    expect(host.querySelector("#controller-device-list")).toBeNull();
+    act(()=>manager.focus("controller-device"));
+    act(()=>manager.dispatch("Confirm"));
+    act(()=>manager.dispatch("NavigateUp"));
+    const focused=manager.activeId();
+    await act(async()=>root.render(render("Xbox Controller")));
+    expect(manager.activeId()).toBe(focused);
+    expect(host.querySelector("#controller-device-list")).not.toBeNull();
+    act(()=>root.unmount());host.remove();
+});

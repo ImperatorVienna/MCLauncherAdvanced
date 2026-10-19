@@ -8,9 +8,11 @@ An independent desktop launcher with keyboard, mouse and controller navigation, 
 
 ## Release status
 
-Version **1.0.0** is available for Linux and Windows x86_64. Game sessions require Microsoft sign-in; publishing the launcher does not imply completed Minecraft API access approval.
+The current version is **1.0.1**, with Linux and Windows x86_64 packages. See the platform validation scope below.
 
-Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are implemented. **Minecraft API access approval for this application's client ID is pending**; Minecraft may reject the application until access is granted. Successful Microsoft sign-in alone does not establish that Minecraft authentication or game launch has succeeded. The submission edition requires an account entitled to Minecraft: Java Edition.
+See the [1.0.1 release notes](docs/release-notes/1.0.1.en-US.md) for this update. Game sessions require Microsoft sign-in; publishing the launcher does not imply completed Minecraft API access approval.
+
+Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are implemented. **This application has not obtained Minecraft API access approval; the initial application was declined.** Microsoft sign-in currently cannot complete the required Minecraft authentication flow. Successful Microsoft sign-in alone does not establish that Minecraft authentication or game launch has succeeded. The public edition is intended for accounts entitled to Minecraft: Java Edition; authentication and entitlement handling remain under review before resubmission.
 
 ## Features
 
@@ -21,17 +23,26 @@ Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are imp
 - Browse, search, install and update mods, resource packs and shader packs from Modrinth using the selected instance's game version and loader. The instance selector is shared with instance management.
 - Scan local content, disable/enable mods, delete files and check for updates. Resource packs and shader packs are activated and configured in game.
 - Navigate with mouse, keyboard or a physical controller. Optional Steam adaptation enables launcher fullscreen and requests the Steam keyboard when launched through Steam.
+- Settings provides Xbox, PlayStation, Nintendo Switch Pro and generic controller diagrams with operation guides. Select a device from the dropdown; valid controller input silently selects the active device without changing the page or focus.
 - English and Simplified Chinese interfaces; English is the initial default.
 - Per-instance game/installer logs and launcher logs accessible through the interface.
+- Five official Java Edition news items on the home page, plus game release notes matched to the selected instance’s Minecraft version.
+- Settings → About shows the version, update checks and project homepage, with separate dialogs for the open-source license and third-party notices.
 
-The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings also provides manual checking, verified downloading, and automatic restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. See the [release contract and validation limits](docs/launcher-updates.md).
+The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings → About also provides manual checking, verified downloading, and automatic restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. See the [release contract and validation limits](docs/launcher-updates.md).
+
+## Official news and game release notes
+
+The home page loads five Java Edition news items from Mojang’s public launcher feed. Selecting a card opens the corresponding official Minecraft article in the browser.
+
+The game’s “Release notes” tab shows the official article for the selected instance’s Minecraft version. It is separate from the launcher release announcements under “What’s new?” in the sidebar. Articles are matched to the exact game version; another version’s notes are never substituted. Missing articles or failed requests produce a message. Official articles retain their original language rather than following the interface language. Unavailable news or articles do not block game launch.
 
 ## Platforms and first launch
 
 | Platform | Package | Validation |
 | --- | --- | --- |
 | Linux x86_64, glibc | AppImage | Game installation and launch tested during development |
-| Windows 10/11 x86_64 | Portable EXE | Built; limited Wine checks passed; real Windows acceptance testing is ongoing |
+| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.1 is cross-compiled and still requires real Windows acceptance testing |
 | macOS ARM64 | Planned | No build available |
 
 Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not bundle or automatically install it. Wine/Proton is not a supported substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other CPU architectures are not current targets.
@@ -107,3 +118,9 @@ Architecture boundaries are mandatory: frontend owns presentation/focus/navigati
 Report the edition, OS/architecture, game and loader versions, reproduction steps and relevant redacted logs. Do not include access/refresh tokens, device codes or account storage.
 
 Dependencies and bundled assets have their own notices and licenses; see `apps/desktop/src-tauri/licenses/`, the bundled font's OFL notice and [asset provenance](docs/ui-reference/README.md). This README does not grant redistribution rights to third-party artwork or Minecraft assets. Minecraft and related names belong to their respective owners.
+
+## License
+
+Project-owned code is licensed under [GNU GPL 3.0](LICENSE)
+(`GPL-3.0-only`). Third-party libraries, fonts and artwork retain their own
+licenses and ownership; this license does not relicense Minecraft assets.

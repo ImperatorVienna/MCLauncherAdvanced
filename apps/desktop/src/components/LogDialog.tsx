@@ -1,13 +1,12 @@
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { localizeMessage, t } from "../i18n";
 import { isDesktop } from "../platform/desktop";
 import { copyLogText, listLogs, openLogLocation, readLog, type LogContent, type LogEntry, type LogRequest } from "../state/logs";
-import { Navigation } from "./Control";
+import { DialogText } from "./DialogText";
 import { SelectMenu } from "./SelectMenu";
 import { StandardButton } from "./StandardButton";
 
 export function LogDialog({request,onClose}: {request:LogRequest;onClose:()=>void}) {
-    const manager=useContext(Navigation), content=useRef<HTMLPreElement>(null);
     const [entries,setEntries]=useState<LogEntry[]>([]), [selected,setSelected]=useState("");
     const [refresh,setRefresh]=useState(0), [listing,setListing]=useState(true), [reading,setReading]=useState(false);
     const [data,setData]=useState<LogContent>(), [error,setError]=useState(""), [copied,setCopied]=useState(false);
@@ -30,12 +29,6 @@ export function LogDialog({request,onClose}: {request:LogRequest;onClose:()=>voi
             .finally(()=>{if(live)setReading(false);});
         return()=>{live=false};
     },[request,selected,refresh]);
-    useLayoutEffect(()=>{
-        const element=content.current!;
-        const unregister=manager.register("log-content",{element,scope:"modal",group:"content"});
-        manager.modalScroll=element;
-        return()=>{unregister();if(manager.modalScroll===element)manager.modalScroll=null;};
-    },[manager]);
     async function open() {try{await openLogLocation(request.instanceId,selected);}catch(e){setError(localizeMessage(e));}}
     async function copy() {try{await copyLogText(data?.text ?? "");setCopied(true);}catch(e){setError(localizeMessage(e));}}
     return <div className="log-viewer">
@@ -49,7 +42,7 @@ export function LogDialog({request,onClose}: {request:LogRequest;onClose:()=>voi
         {!listing && !entries.length && <p>{t("No logs yet")}</p>}
         {(listing || reading) && <p role="status">{t("Loading logs…")}</p>}
         {data?.truncated && <p>{t("Only part of this large log is displayed. Open the original file to read it in full.")}</p>}
-        <pre ref={content} id="log-content" className="log-content" tabIndex={0} aria-label={t("Log contents")}>{data?.text ?? ""}</pre>
+        <DialogText id="log-content" label={t("Log contents")} text={data?.text ?? ""}/>
         {error && <p className="config-error" role="alert">{error}</p>}
         <div className="config-actions">
             <StandardButton id="log-copy" scope="modal" disabled={!data?.text || reading || listing} onClick={()=>void copy()}>{t(copied ? "Copied" : "Copy log contents")}</StandardButton>
