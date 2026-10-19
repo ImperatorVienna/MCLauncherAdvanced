@@ -59,7 +59,7 @@ function AppContent() {
     const lastGamePage = useRef("play");
     const lastAccountPage = useRef("accounts");
     const currentTabs = tabs.includes(page) ? tabs : accountTabs.includes(page) ? accountTabs : settingsTabs.includes(page) ? settingsTabs : [page];
-    const [modal, setModal] = useState<"create" | "edit" | "delete" | "logs" | "license" | "notices" | null>(null);
+    const [modal, setModal] = useState<"create" | "edit" | "delete" | "logs" | "license" | "notices" | "privacy" | null>(null);
     const library = useLibrary();
     const [logRequest,setLogRequest]=useState<LogRequest>({});
     function viewLogs(request:LogRequest) {
@@ -109,7 +109,7 @@ function AppContent() {
         setModal(kind);
     }
     function close() {
-        if (modal === "logs" || modal === "license" || modal === "notices") { setModal(null); return; }
+        if (modal === "logs" || modal === "license" || modal === "notices" || modal === "privacy") { setModal(null); return; }
         if (busyRef.current)
             return;
         library.clearError();
@@ -344,8 +344,8 @@ function AppContent() {
                 if (event.target === event.currentTarget)
                     close();
             }}>
-          <section ref={element => { manager.modalContainer = element; }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" className={modal === "logs" || modal === "license" || modal === "notices" ? "dialog log-dialog" : "dialog"}>
-            {modal === "license" || modal === "notices" ? <LegalDialog kind={modal} onClose={close}/> : modal === "logs" ? <LogDialog request={logRequest} onClose={close}/> : modal === "create" || modal === "edit" ? <InstanceEditor java={java} onJavaInstall={major => void installer.startJava(major)} preview={library.preview} item={modal === "edit" ? selected : undefined} busy={working} onCancelTask={() => void installer.cancel()} taskRunning={installer.busy} error={library.error || installer.error || localizeMessage(installer.task?.error)} onSave={saveInstance} onCancel={close}/> : modal === "delete" ? <>
+          <section ref={element => { manager.modalContainer = element; }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" className={modal === "logs" || modal === "license" || modal === "notices" || modal === "privacy" ? "dialog log-dialog" : "dialog"}>
+            {modal === "license" || modal === "notices" || modal === "privacy" ? <LegalDialog kind={modal} onClose={close}/> : modal === "logs" ? <LogDialog request={logRequest} onClose={close}/> : modal === "create" || modal === "edit" ? <InstanceEditor java={java} onJavaInstall={major => void installer.startJava(major)} preview={library.preview} item={modal === "edit" ? selected : undefined} busy={working} onCancelTask={() => void installer.cancel()} taskRunning={installer.busy} error={library.error || installer.error || localizeMessage(installer.task?.error)} onSave={saveInstance} onCancel={close}/> : modal === "delete" ? <>
               <h2 id="dialog-title">{t("Delete instance")}</h2>
               <p>{t("Delete instance {name}? Its directory and all saves, mods, resource packs, shaders, and settings will be permanently deleted.", {name: selected?.name ?? ""})}</p>
               <p className="java-path">{t("Directory:")}{installed?.gameDirectory ?? `.minecraft/versions/${selected?.directoryName}`}</p>

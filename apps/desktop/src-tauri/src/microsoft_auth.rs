@@ -52,6 +52,13 @@ fn checked(request:RequestBuilder,stage:&str)->Result<Value> {
     let (status,data)=response(request)?;
     if !(200..300).contains(&status) {return Err(failure(stage,status,&data))} Ok(data)
 }
+// Structural validation only. An empty store list does not establish whether a
+// subscription is active; profile access must still succeed before persistence.
+fn validate_entitlements(value:&Value)->Result<()> {
+    let items=value["items"].as_array().ok_or("Incomplete response from sign-in service")?;
+    for item in items { text(item,"name")?; }
+    Ok(())
+}
 fn exchange(client:&Client,access:&str,refresh:String)->Result<Credential> {
     exchange_at(client,access,refresh,["https://user.auth.xboxlive.com/user/authenticate","https://xsts.auth.xboxlive.com/xsts/authorize","https://api.minecraftservices.com/authentication/login_with_xbox","https://api.minecraftservices.com/entitlements/mcstore","https://api.minecraftservices.com/minecraft/profile"])
 }
@@ -71,7 +78,8 @@ fn exchange_at(client:&Client,access:&str,refresh:String,urls:[&str;5])->Result<
     let token=text(&minecraft,"access_token")?.to_owned();
     // Minecraft requires the store check before profile access. Do not hard-code
     // product names: subscription entitlements can differ from purchased copies.
-    checked(client.get(urls[3]).bearer_auth(&token),"Minecraft entitlements")?;
+    let entitlements=checked(client.get(urls[3]).bearer_auth(&token),"Minecraft entitlements")?;
+    validate_entitlements(&entitlements)?;
     let profile=checked(client.get(urls[4]).bearer_auth(&token),"Minecraft profile")?;
     let id=text(&profile,"id")?.to_lowercase(); let name=text(&profile,"name")?.to_owned();
     if !crate::accounts::valid_id(&id) || !crate::accounts::valid_name(&name) {return Err("Invalid Minecraft profile".into())}
@@ -133,29 +141,25 @@ fn login(session:&MicrosoftLogin,id:u64,store:&AccountStore)->Result<()> {
         }
     }
 }
-#[tauri::command]
-pub fn start_microsoft_login(session:tauri::State<'_,MicrosoftLogin>,store:tauri::State<'_,AccountStore>)->Result<()> {
+pub fn start_microsoft_login(session:&MicrosoftLogin,store:&AccountStore)->Result<()> {
     let id={let mut s=session.0.lock().map_err(|_|"Sign-in state is unavailable")?;
         if s.status.running {return Err("Sign-in is already running".into())}
         s.generation+=1;s.status=LoginStatus {running:true,phase:"starting".into(),..Default::default()};s.generation};
-    let session=session.inner().clone();let store=store.inner().clone();let failure_session=session.clone();
+    let session=session.clone();let store=store.clone();let failure_session=session.clone();
     if std::thread::Builder::new().name("microsoft-login".into()).spawn(move || {
         let outcome=std::panic::catch_unwind(std::panic::AssertUnwindSafe(||login(&session,id,&store))).unwrap_or_else(|_|Err("Sign-in stopped unexpectedly; retry".into()));
         if let Err(error)=outcome {let _=session.update(id,|s|{*s=LoginStatus {error:Some(error),..Default::default()};});}
     }).is_err() {let _=failure_session.update(id,|s|{s.running=false;});return Err("Cannot start sign-in".into())}
     Ok(())
 }
-#[tauri::command]
-pub fn microsoft_login_status(session:tauri::State<'_,MicrosoftLogin>)->Result<LoginStatus> {Ok(session.0.lock().map_err(|_|"Sign-in state is unavailable")?.status.clone())}
-#[tauri::command]
-pub fn cancel_microsoft_login(session:tauri::State<'_,MicrosoftLogin>)->Result<()> {
+pub fn microsoft_login_status(session:&MicrosoftLogin)->Result<LoginStatus> {Ok(session.0.lock().map_err(|_|"Sign-in state is unavailable")?.status.clone())}
+pub fn cancel_microsoft_login(session:&MicrosoftLogin)->Result<()> {
     let mut s=session.0.lock().map_err(|_|"Sign-in state is unavailable")?;s.generation+=1;s.status=LoginStatus::default();Ok(())
 }
-#[tauri::command]
-pub fn open_microsoft_login(session:tauri::State<'_,MicrosoftLogin>)->Result<()> {
+pub fn verification_address(session:&MicrosoftLogin)->Result<String> {
     let s=session.0.lock().map_err(|_|"Sign-in state is unavailable")?;
     let uri=s.status.verification_uri.as_ref().filter(|_|s.status.running).ok_or("Start sign-in first")?;
-    launcher_platform::open_external(uri).map_err(|_|"Cannot open browser; open the displayed address manually".into())
+    Ok(uri.clone())
 }
 pub struct Identity {pub name:String,pub uuid:String,pub access_token:String,pub xuid:String}
 pub fn identity(store:&AccountStore,selected:&str)->Result<Identity> {
@@ -180,6 +184,38 @@ fn refresh_credential(store:&AccountStore,id:&str,request:impl FnOnce(&str)->Res
 
 #[cfg(test)] mod tests {
     use super::*;
+    #[test] fn entitlement_shape_does_not_invent_subscription_policy() {
+        assert!(validate_entitlements(&json!({"items":[]})).is_ok());
+        assert!(validate_entitlements(&json!({"items":[{"name":"game_minecraft"}]})).is_ok());
+        assert!(validate_entitlements(&json!({"items":[{"name":"future_product"}]})).is_ok());
+        for value in [json!({}),json!({"items":null}),json!({"items":{}}),json!({"items":[{}]}),json!({"items":[{"name":""}]})] {
+            assert!(validate_entitlements(&value).is_err());
+        }
+    }
+    #[test] fn restricted_expired_and_missing_profile_errors_are_distinct() {
+        for code in ["invalid_grant","interaction_required","login_required"] {
+            assert!(failure("Microsoft",400,&json!({"error":code})).contains("sign in with Microsoft again"));
+        }
+        assert!(failure("Microsoft",400,&json!({"error":"expired_token"})).contains("code expired"));
+        assert!(failure("Xbox XSTS",401,&json!({"XErr":2148916238_u64})).contains("family authorization"));
+        assert!(failure("Minecraft profile",404,&json!({})).contains("No Minecraft Java profile"));
+        assert!(failure("Minecraft entitlements",401,&json!({"access_token":"secret"})).contains("HTTP 401"));
+    }
+    #[test] fn rejected_refresh_cannot_replace_expired_credentials() {
+        let (_dir,store,c)=store();
+        let result=refresh_credential(&store,&c.id,|_|Err("Sign-in expired or was revoked; sign in with Microsoft again".into()),|_,_|panic!("must not exchange a rejected token"));
+        assert!(result.is_err());
+        assert_eq!(store.credential(&c.id).unwrap().expires_at,0);
+        assert_eq!(store.credential(&c.id).unwrap().refresh_token,"old");
+    }
+    #[test] fn cancelled_login_has_no_browser_destination() {
+        let session=MicrosoftLogin::default();
+        assert!(verification_address(&session).is_err());
+        { let mut state=session.0.lock().unwrap();state.status.running=true;state.status.verification_uri=Some(VERIFY.into()); }
+        assert_eq!(verification_address(&session).unwrap(),VERIFY);
+        cancel_microsoft_login(&session).unwrap();
+        assert!(verification_address(&session).is_err());
+    }
     #[test] fn errors_do_not_expose_server_payloads() {
         let body=json!({"access_token":"secret","error_description":"secret","XErr":2148916233_u64});
         assert!(failure("Xbox",401,&body).contains("Xbox profile"));

@@ -8,11 +8,11 @@ An independent desktop launcher with keyboard, mouse and controller navigation, 
 
 ## Release status
 
-The current version is **1.0.1**, with Linux and Windows x86_64 packages. See the platform validation scope below.
+The current version is **1.0.2**, with Linux and Windows x86_64 packages. See the platform validation scope below.
 
-See the [1.0.1 release notes](docs/release-notes/1.0.1.en-US.md) for this update. Game sessions require Microsoft sign-in; publishing the launcher does not imply completed Minecraft API access approval.
+See the [1.0.2 release notes](docs/release-notes/1.0.2.en-US.md) for this update. Game sessions require Microsoft sign-in; publishing the launcher does not imply completed Minecraft API access approval.
 
-Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are implemented. **This application has not obtained Minecraft API access approval; the initial application was declined.** Microsoft sign-in currently cannot complete the required Minecraft authentication flow. Successful Microsoft sign-in alone does not establish that Minecraft authentication or game launch has succeeded. The public edition is intended for accounts entitled to Minecraft: Java Edition; authentication and entitlement handling remain under review before resubmission.
+Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are implemented. **This application has not obtained Minecraft API access approval.** Microsoft sign-in currently cannot complete the required Minecraft authentication flow. Successful Microsoft sign-in alone does not establish that Minecraft authentication or game launch has succeeded.
 
 ## Features
 
@@ -27,7 +27,7 @@ Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are imp
 - English and Simplified Chinese interfaces; English is the initial default.
 - Per-instance game/installer logs and launcher logs accessible through the interface.
 - Five official Java Edition news items on the home page, plus game release notes matched to the selected instance’s Minecraft version.
-- Settings → About shows the version, update checks and project homepage, with separate dialogs for the open-source license and third-party notices.
+- Settings → About shows the version, update checks, maintainer homepage and project homepage, with separate dialogs for the open-source license and third-party notices.
 
 The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings → About also provides manual checking, verified downloading, and automatic restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. See the [release contract and validation limits](docs/launcher-updates.md).
 
@@ -35,14 +35,16 @@ The skin library supports local PNG import and preview. Uploading/applying skins
 
 The home page loads five Java Edition news items from Mojang’s public launcher feed. Selecting a card opens the corresponding official Minecraft article in the browser.
 
-The game’s “Release notes” tab shows the official article for the selected instance’s Minecraft version. It is separate from the launcher release announcements under “What’s new?” in the sidebar. Articles are matched to the exact game version; another version’s notes are never substituted. Missing articles or failed requests produce a message. Official articles retain their original language rather than following the interface language. Unavailable news or articles do not block game launch.
+The game’s “Release notes” tab shows the official article for the selected instance’s Minecraft version. It is separate from the launcher release announcements under “What’s new?” in the sidebar. Articles are matched to the exact game version; another version’s notes are never substituted. Missing articles or failed requests produce a message. Official news and game release notes use English source content regardless of the interface language; buttons and source labels follow the interface language. Unavailable news or articles do not block game launch.
+
+Version 1.0.2 introduces the MCLA icon across the launcher window, desktop integration and browser preview, fixes Wayland application identity matching, and refines bundled fonts, article layout and English interface wording. Asset notices and original license documents are displayed in English.
 
 ## Platforms and first launch
 
 | Platform | Package | Validation |
 | --- | --- | --- |
 | Linux x86_64, glibc | AppImage | Game installation and launch tested during development |
-| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.1 is cross-compiled and still requires real Windows acceptance testing |
+| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.2 has been cross-compiled and packaged, and still requires real Windows acceptance testing |
 | macOS ARM64 | Planned | No build available |
 
 Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not bundle or automatically install it. Wine/Proton is not a supported substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other CPU architectures are not current targets.
@@ -113,6 +115,16 @@ Browser preview has separate local data and does not perform native game install
 
 Architecture boundaries are mandatory: frontend owns presentation/focus/navigation; core owns portable models and persistence; domain services own game/content workflows; platform adapters own OS integration. See [platform boundaries](docs/platform-boundary.md), [storage](docs/storage-and-updates.md), [installation](docs/installation.md), and [form spacing](docs/ui-reference/form-spacing.md).
 
+## Privacy and local data
+
+[Privacy and local data](PRIVACY.md)
+
+## Maintainer and contact
+
+MC Launcher Advanced is maintained and published by [ImperatorVienna](https://github.com/ImperatorVienna) in an individual capacity. The individual maintainer is responsible for this project; it is not published on behalf of a company or organization.
+
+Contact: [imperator.vienna@outlook.com](mailto:imperator.vienna@outlook.com).
+
 ## Reports and credits
 
 Report the edition, OS/architecture, game and loader versions, reproduction steps and relevant redacted logs. Do not include access/refresh tokens, device codes or account storage.
@@ -124,3 +136,9 @@ Dependencies and bundled assets have their own notices and licenses; see `apps/d
 Project-owned code is licensed under [GNU GPL 3.0](LICENSE)
 (`GPL-3.0-only`). Third-party libraries, fonts and artwork retain their own
 licenses and ownership; this license does not relicense Minecraft assets.
+
+## Interface design and asset notices
+
+The interface draws on the visual style of the official Minecraft launcher, is independently implemented, and is optimized for keyboard, mouse and controller use. The project does not use official launcher program code obtained through reverse engineering.
+
+Original code is licensed under GPL-3.0-only. Referenced Minecraft marks, textures, skins, backgrounds and official editorial content are excluded from that grant. The MCLA icon's original lettering and geometry are distinguished from its referenced grass-block texture. Provenance is not permission; unconfirmed redistribution permissions are recorded explicitly. See [Asset, design and third-party rights notices](ASSET-NOTICES.md).

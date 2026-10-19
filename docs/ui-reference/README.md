@@ -1,5 +1,7 @@
 # UI 参考与素材记录
 
+> 本文保留开发阶段的历史记录；早期“仅使用原创占位图”“不附带官方图片”等描述已被后续实现替代，不能作为当前发行版的素材声明。当前清单和授权状态以[素材声明](../../ASSET-NOTICES.md)为准。
+
 用户在本次会话提供官方 Java Edition Play 页截图，左下角标识 `v.3.41.29-2.6.12`，原始分辨率 3839×2070；另提供侧栏 `MINECRAFT: / JAVA EDITION` 字体局部截图。以这两张截图为本次布局与字体风格参考，不混用其他版本。
 
 用户进一步明确：**不复刻官方图片，仅复刻 UI、LOGO 等美术风格；字体沿用截图风格。** 因此生产资源不含官方截图或图片；背景和资讯缩略图使用原创 CSS 图形，文字 LOGO 为 CSS 表现，不提取官方图像。侧栏采用粗体无衬线、全大写、两行排版；中文采用系统无衬线回退。截图无法识别确切字体文件，未声称字体完全一致。
@@ -39,3 +41,11 @@
 - [Scrollbars](scrollbars.md): black track and square gray thumb matching the in-game reference.
 
 - [Form spacing](form-spacing.md): shared 16 CSS px spacing for labels, explanatory text, controls, and adjacent settings groups.
+
+## 下一版本 MCLA 应用图标
+
+`apps/desktop/src-tauri/icons/icon.svg` 为可复现的几何绘制源文件，生成器为
+`scripts/generate-launcher-icon.py`。MCLA 字形由项目绘制，方块和文字共用
+30° 等轴测投影；底层草方块纹理复用现有 `installation-icons/grass.svg`，
+Minecraft 纹理权利仍归原权利人，不因加入 MCLA 字样而变成项目原创纹理。
+PNG、ICO 与预览 favicon 从同一 SVG 导出。此项用于下一版本，不改动已有发行包。

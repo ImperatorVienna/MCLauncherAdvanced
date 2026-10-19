@@ -360,3 +360,32 @@ test("vertical navigation ignores height differences within the current row and 
   top.element.focus(); manager.dispatch("NavigateDown");
   expect(document.activeElement).toBe(next.element);
 });
+
+test("scrolled download rows take priority over a fixed tab bar", () => {
+  const tab=region("tab",100,100,"tabs");manager.activeTabId="tab";
+  const previous=region("previous",700,20,"content");
+  const current=region("current",700,180,"content");
+  const scroll=document.createElement("div");document.body.append(scroll);
+  scroll.append(previous,current);manager.scroll=scroll;
+  previous.scrollIntoView=vi.fn();current.focus();
+  manager.dispatch("NavigateUp");
+  expect(document.activeElement).toBe(previous);
+  expect(previous.scrollIntoView).toHaveBeenCalled();
+  tab.focus();manager.dispatch("NavigateUp");
+  expect(document.activeElement).toBe(tab);
+});
+
+test("scroll navigation skips disabled rows before returning to the selected tab", () => {
+  const tab=region("tab",100,100,"tabs");manager.activeTabId="tab";
+  const above=region("above",700,20,"content");above.disabled=true;
+  const current=region("current",700,180,"content");
+  const scroll=document.createElement("div");document.body.append(scroll);scroll.append(above,current);manager.scroll=scroll;
+  current.focus();manager.dispatch("NavigateUp");expect(document.activeElement).toBe(tab);
+});
+test("downward navigation through scrolled content cannot enter the fixed tab bar", () => {
+  region("tab",100,100,"tabs");manager.activeTabId="tab";
+  const current=region("current",700,20,"content");
+  const next=region("next",700,180,"content");
+  const scroll=document.createElement("div");document.body.append(scroll);scroll.append(current,next);manager.scroll=scroll;
+  current.focus();manager.dispatch("NavigateDown");expect(document.activeElement).toBe(next);
+});

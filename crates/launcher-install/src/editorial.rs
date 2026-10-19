@@ -25,7 +25,7 @@ pub fn allowed_link(url: &str) -> bool {
     if u.scheme() != "https" || !u.username().is_empty() || u.password().is_some() || u.port().is_some() {return false;}
     match u.host_str() {
         Some("www.minecraft.net") => true,
-        Some("github.com") => u.path() == "/ImperatorVienna/MCLauncherAdvanced" || u.path().starts_with("/ImperatorVienna/MCLauncherAdvanced/"),
+        Some("github.com") => u.path() == "/ImperatorVienna" || u.path() == "/ImperatorVienna/" || u.path() == "/ImperatorVienna/MCLauncherAdvanced" || u.path().starts_with("/ImperatorVienna/MCLauncherAdvanced/"),
         _ => false,
     }
 }
@@ -47,6 +47,8 @@ pub fn allowed_link(url: &str) -> bool {
         for p in ["../news.json","javaPatchNotes/../secret.json","javaPatchNotes/a/b.json","https://example.com","javaPatchNotes/a.json?x=1"] {assert!(!valid_path(p));}
         assert!(allowed_link("https://www.minecraft.net/en-us/article/example"));
         assert!(allowed_link("https://github.com/ImperatorVienna/MCLauncherAdvanced"));
+        assert!(allowed_link("https://github.com/ImperatorVienna"));
+        assert!(!allowed_link("https://github.com/ImperatorVienna-evil"));
         for u in ["file:///tmp/a","https://www.minecraft.net.evil.com/","https://user@www.minecraft.net/","https://github.com/ImperatorVienna/MCLauncherAdvanced-evil","https://www.minecraft.net:444/"] {assert!(!allowed_link(u));}
     }
 }

@@ -37,3 +37,14 @@ This standard concerns form layout, not unrelated page padding or artwork geomet
   overflowing at the minimum supported viewport.
 - Skin preview and action groups use the shared gap; arrow artwork remains the
   existing pixel design. Normal button bevel space is deliberately preserved.
+
+## External and quoted content
+
+Official articles/news, release announcements, resource descriptions and legal
+notices follow the same local typography and spacing system. Preserve source
+wording and semantic structure, but never import remote fonts or presentation.
+Use `--ui-font` for prose and `--settings-gap` for section/paragraph separation;
+compact list items may use 8px. Long identifiers and URLs must wrap. Tables must
+fit the content width. Preserve original license text and credits. All links
+must use registered navigation controls; long documents keep a registered scroll
+owner with consistent keyboard/controller focus and close behavior.

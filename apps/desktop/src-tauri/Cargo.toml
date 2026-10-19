@@ -1,7 +1,7 @@
 [package]
 license = "GPL-3.0-only"
 name = "mclauncher-advanced"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 description = "A third-party powered launcher for Minecraft Java Edition with an interface similar to the official."
 [build-dependencies]
@@ -22,3 +22,7 @@ launcher-install = { path = "../../../crates/launcher-install" }
 
 [dev-dependencies]
 tauri = { version = "2", features = ["test"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+glib = "0.18"
+gtk = "0.18"

@@ -15,6 +15,18 @@ pub fn script(image: &Path) -> Result<String, String> {
     Ok(format!("#!/bin/sh\nset -eu\nbase=$(CDPATH= cd -- \"$(dirname -- \"$0\")\" && pwd -P)\nimage=\"$base\"/{}\nexec \"$image\" \"$@\"\n", quote_shell(filename)))
 }
 impl Integration {
+    /// Wayland resolves window icons through a desktop file matching the GTK ID.
+    /// Keep the existing launcher entry (and Steam references) stable; the alias
+    /// is hidden from application menus to avoid a duplicate launcher entry.
+    pub fn register_identity(&self, desktop_id: &str) -> Result<(), String> {
+        if desktop_id.is_empty() || !desktop_id.bytes().all(|c| c.is_ascii_alphanumeric() || b".-_".contains(&c)) {
+            return Err("Invalid desktop application ID".into());
+        }
+        let alias = self.desktop.with_file_name(format!("{desktop_id}.desktop"));
+        if alias == self.desktop { return Ok(()); }
+        let entry = fs::read_to_string(&self.desktop).map_err(err)?;
+        atomic_write(&alias, format!("{entry}NoDisplay=true\nStartupWMClass={desktop_id}\n").as_bytes())
+    }
     pub fn register(&self, image: &Path) -> Result<(), String> {
         let content = script(image)?;
         atomic_write(&self.script, content.as_bytes())?;
@@ -38,6 +50,23 @@ impl Integration {
     use super::*;
     use launcher_core::storage::Storage;
     fn stamp()->String {format!("{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos())}
+    #[test] fn desktop_identity_keeps_icon_and_portable_entry() {
+        let root=std::env::temp_dir().join(format!("desktop-identity-{}",stamp()));
+        fs::create_dir_all(&root).unwrap();
+        let image=root.join("launcher.AppImage"); fs::write(&image,b"package").unwrap();
+        fs::write(root.join("icon.png"),b"icon").unwrap();
+        let integration=Integration {script:root.join("launch.sh"),desktop:root.join("legacy.desktop")};
+        integration.register(&image).unwrap();
+        integration.register_identity("dev.personal.javalauncher").unwrap();
+        let legacy=fs::read_to_string(&integration.desktop).unwrap();
+        let alias=fs::read_to_string(root.join("dev.personal.javalauncher.desktop")).unwrap();
+        assert!(alias.starts_with(&legacy));
+        assert!(alias.contains("Icon="));
+        assert!(alias.contains("NoDisplay=true\nStartupWMClass=dev.personal.javalauncher\n"));
+        assert!(!legacy.contains("NoDisplay"));
+        assert!(integration.register_identity("../bad").is_err());
+        fs::remove_dir_all(root).unwrap();
+    }
     #[cfg(unix)]
     #[test] fn moved_script_preserves_steam_environment_and_arguments() {
         use std::os::unix::fs::PermissionsExt;

@@ -1,4 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod host;
 mod editorial_commands;
 mod updater;
 mod content_commands;
@@ -9,7 +10,9 @@ mod local_instances;
 mod logs;
 mod loader_management;
 mod accounts;
+mod clipboard_commands;
 mod microsoft_auth;
+mod microsoft_auth_commands;
 mod skins;
 mod launch_plan;
 mod launch_commands;
@@ -40,6 +43,8 @@ fn save_library(
     configuration::save_metadata(&storage.as_ref().map_err(Clone::clone)?.store(), library).inspect_err(|e|logs::record(&format!("Saving instance library failed: {e}")))
 }
 fn main() {
+    let context = tauri::generate_context!();
+    host::initialize_identity(&context.config().identifier);
     tauri::Builder::default()
         .setup(|app| {
             let _ = logs::initialize(&storage_commands::launcher_directory()?);
@@ -95,6 +100,7 @@ fn main() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            clipboard_commands::copy_clipboard_text,
             editorial_commands::official_content, editorial_commands::open_information_link,
             updater::launcher_update_status, updater::check_launcher_update, updater::download_launcher_update, updater::cancel_launcher_update,
             content_downloads::identify_instance_content,
@@ -108,7 +114,7 @@ fn main() {
             content_commands::set_instance_content_enabled,
             content_commands::open_instance_content_directory,
             logs::list_logs, logs::read_log, logs::open_log_location,
-            microsoft_auth::start_microsoft_login, microsoft_auth::microsoft_login_status, microsoft_auth::cancel_microsoft_login, microsoft_auth::open_microsoft_login,
+            microsoft_auth_commands::start_microsoft_login, microsoft_auth_commands::microsoft_login_status, microsoft_auth_commands::cancel_microsoft_login, microsoft_auth_commands::open_microsoft_login,
             accounts::load_accounts, accounts::save_accounts,
             skins::load_skins, skins::save_skins,
             launch_commands::launch_game, launch_commands::game_status,
@@ -134,7 +140,7 @@ fn main() {
             install_commands::cancel_installation,
             install_commands::installed_versions
         ])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("failed to run launcher desktop shell");
 }
 

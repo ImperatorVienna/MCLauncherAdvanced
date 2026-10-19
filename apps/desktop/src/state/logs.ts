@@ -11,6 +11,11 @@ export const readLog = (request: LogRequest, name: string) =>
 export const openLogLocation = (instanceId?: string, name?: string) =>
     invokeNative<void>("open_log_location", {instanceId:instanceId ?? null,name:name ?? null});
 export async function copyLogText(text: string) {
-    if (!navigator.clipboard?.writeText) throw Error(t("Clipboard is unavailable"));
-    await navigator.clipboard.writeText(text);
+    try {
+        if (isDesktop() && await invokeNative<boolean>("copy_clipboard_text", {text})) return;
+        if (!navigator.clipboard?.writeText) throw Error();
+        await navigator.clipboard.writeText(text);
+    } catch {
+        throw Error(t("Clipboard is unavailable"));
+    }
 }

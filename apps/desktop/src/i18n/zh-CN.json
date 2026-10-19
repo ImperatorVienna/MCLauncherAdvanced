@@ -369,7 +369,7 @@
   "Minecraft.net": "Minecraft.net",
   "Game version: {version}": "游戏版本：{version}",
   "No instance selected": "未选择配置",
-  "Source: Mojang. Official articles are shown in their original language.": "来源：Mojang。官方文章以原文显示。",
+  "Source: Mojang. Official articles are shown in their original language.": "来源：Mojang官方，以原文显示。",
   "Select an instance to view its game patch notes.": "请选择配置以查看对应游戏版本的更新说明。",
   "Loading game patch notes…": "正在加载游戏更新说明……",
   "Game patch notes could not be loaded.": "无法加载游戏更新说明。",
@@ -401,5 +401,11 @@
   "Button artwork follows the reported device name. Virtual controllers may appear as another model; confirmation uses the bottom face button and back uses the right face button.": "按键图示根据设备上报的名称匹配。虚拟手柄可能显示为其他型号；确认使用下方面键，返回使用右侧面键。",
   "Select controller": "选择手柄",
   "Cross button": "叉键",
-  "Circle button": "圆圈键"
+  "Circle button": "圆圈键",
+  "The interface draws on the visual style of the official Minecraft launcher and is independently implemented, with improvements for keyboard, mouse and controller use.": "界面参考 Minecraft 官方启动器的视觉风格，由本项目独立实现，并针对键鼠与手柄操作进行优化。",
+  "No official launcher program code obtained through reverse engineering is used. Referenced artwork retains its original ownership; see Third-party notices for sources and permission status.": "本项目未使用通过逆向工程取得的官方启动器程序代码。引用素材保留原有权属；来源与授权状态详见“第三方声明”。",
+  "Developed, maintained and published by ImperatorVienna in an individual capacity.": "由 ImperatorVienna 以个人名义开发、维护和发布，责任主体为维护者本人。",
+  "Contact: imperator.vienna@outlook.com": "联系邮箱：imperator.vienna@outlook.com",
+  "Maintainer homepage": "维护者主页",
+  "Privacy notice": "隐私声明"
 }

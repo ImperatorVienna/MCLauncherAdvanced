@@ -8,11 +8,11 @@
 
 ## 发布状态
 
-当前版本为 **1.0.1**，提供 Linux 与 Windows x86_64 发行包。各平台验证范围见下文。
+当前版本为 **1.0.2**，提供 Linux 与 Windows x86_64 发行包。各平台验证范围见下文。
 
-本次变更见 [1.0.1 更新公告](docs/release-notes/1.0.1.zh-CN.md)。启动游戏需要 Microsoft 登录；启动器发布不代表 Minecraft API 访问审核已完成。
+本次变更见 [1.0.2 更新公告](docs/release-notes/1.0.2.zh-CN.md)。启动游戏需要 Microsoft 登录；启动器发布不代表 Minecraft API 访问审核已完成。
 
-Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本应用尚未获得 Minecraft API 访问批准，首次申请已被拒绝。** 当前 Microsoft 登录无法完成所需的 Minecraft 认证流程。Microsoft 登录成功并不等于 Minecraft 认证或游戏启动成功。公开版面向具有 Minecraft: Java Edition 使用资格的账户；重新提交前仍需完善认证与权益处理。
+Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本应用尚未获得 Minecraft API 访问批准。** 当前 Microsoft 登录无法完成所需的 Minecraft 认证流程。Microsoft 登录成功并不等于 Minecraft 认证或游戏启动成功。
 
 ## 功能
 
@@ -27,7 +27,7 @@ Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本�
 - 提供英文和简体中文界面，首次启动默认英文。
 - 在界面内查看各配置的游戏／安装日志以及启动器日志。
 - 首页显示五条 Java 版官方新闻；游戏更新说明按当前配置的 Minecraft 版本加载。
-- 在“设置 → 关于”查看版本、检查更新、访问项目主页，并通过独立弹窗阅读开源许可证和第三方声明。
+- 在“设置 → 关于”查看版本、检查更新、访问维护者主页和项目主页，并通过独立弹窗阅读开源许可证和第三方声明。
 
 皮肤库支持导入本地 PNG 和预览，**尚未接入向 Microsoft 账户上传／应用皮肤**。启动时会自动检查 GitHub 正式版更新，“设置 → 关于”也可手动检查、下载校验并自动重启安装。新版采用发行包的文件名并保存在原目录，旧版加上 `.previous` 后缀保留；新版成功启动后清理更新缓存。详见[发布约定与验证范围](docs/launcher-updates.md)。
 
@@ -35,14 +35,16 @@ Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本�
 
 首页从 Mojang 的公开启动器数据源加载五条 Java 版相关新闻，点击卡片在浏览器中打开对应的 Minecraft 官方文章。
 
-“更新说明”显示当前配置的 Minecraft 游戏版本对应的官方文章，与左侧“有什么新内容？”中的启动器更新公告相互独立。游戏文章按版本精确匹配，不会用其他版本的说明代替；没有对应文章或网络请求失败时会显示提示。官方文章保留来源原文，不随界面语言翻译。新闻或文章暂时不可用不会阻止游戏启动。
+“更新说明”显示当前配置的 Minecraft 游戏版本对应的官方文章，与左侧“有什么新内容？”中的启动器更新公告相互独立。游戏文章按版本精确匹配，不会用其他版本的说明代替；没有对应文章或网络请求失败时会显示提示。官方新闻与游戏更新说明统一使用英文原文，不随界面语言切换；按钮与来源说明随界面语言显示。新闻或文章暂时不可用不会阻止游戏启动。
+
+1.0.2 为启动器窗口、桌面集成及浏览器预览启用 MCLA 图标，修复 Wayland 应用身份匹配，并优化内置字体、文章排版和英文界面文案。素材声明与许可证原文统一以英文展示。
 
 ## 平台和首次运行
 
 | 平台 | 包格式 | 验证状态 |
 | --- | --- | --- |
 | Linux x86_64，glibc | AppImage | 开发过程中已测试游戏安装和启动 |
-| Windows 10／11 x86_64 | 便携 EXE | 此前版本完成有限的 Wine 检查；1.0.1 为交叉编译版本，仍需 Windows 实机验收 |
+| Windows 10／11 x86_64 | 便携 EXE | 此前版本完成有限的 Wine 检查；1.0.2 已交叉编译打包，仍需 Windows 实机验收 |
 | macOS ARM64 | 计划中 | 暂无构建 |
 
 Windows 需要安装 **Microsoft Edge WebView2 Runtime**。便携 EXE 不内置该运行时，也不会自动安装。Wine／Proton 不作为 Windows 验收环境；Linux 请使用原生 AppImage。目前不面向 Windows 7／8／8.1 或其他处理器架构。
@@ -113,6 +115,16 @@ python3 scripts/check-source-language.py
 
 严格遵守架构分层：前端负责显示、焦点和导航；核心负责通用模型与持久化；领域服务负责游戏和内容流程；平台适配器负责操作系统交互。参见[平台边界](docs/platform-boundary.md)、[目录规则](docs/storage-and-updates.md)、[安装流程](docs/installation.md)和[表单间距](docs/ui-reference/form-spacing.md)。
 
+## 隐私与本地数据
+
+[隐私与本地数据](PRIVACY.zh-CN.md)
+
+## 维护者与联系方式
+
+MC Launcher Advanced 由 [ImperatorVienna](https://github.com/ImperatorVienna) 以个人名义维护和发布，项目责任主体为维护者本人，不代表公司或组织。
+
+联系邮箱：[imperator.vienna@outlook.com](mailto:imperator.vienna@outlook.com)。
+
 ## 问题报告与致谢
 
 报告问题时请提供版本分支、系统／架构、游戏与加载器版本、复现步骤及脱敏日志。不要附上访问令牌、刷新令牌、设备登录代码或账户存储文件。
@@ -124,3 +136,9 @@ python3 scripts/check-source-language.py
 项目自有代码采用 [GNU GPL 3.0 许可证](LICENSE)（`GPL-3.0-only`）。
 第三方库、字体与美术素材保留各自许可及权利归属，此许可证不对 Minecraft
 素材重新授权。
+
+## 界面设计与素材声明
+
+界面参考 Minecraft 官方启动器的视觉风格，由本项目独立实现，并针对键鼠与手柄操作进行优化。本项目未使用通过逆向工程取得的官方启动器程序代码。
+
+原创代码按 GPL-3.0-only 发布；引用的 Minecraft 标志、纹理、皮肤、背景及官方新闻内容不在该授权范围内。MCLA 图标的原创字母和几何排布与引用的草方块纹理分别声明权利。来源说明不等于使用授权，未确认的素材再分发许可均如实记录。详见[素材、设计与第三方权利声明](ASSET-NOTICES.md)。

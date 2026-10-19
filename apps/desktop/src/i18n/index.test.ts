@@ -3,6 +3,7 @@ import { beforeEach, expect, test } from "vitest";
 import ui from "./zh-CN.json";
 import backend from "./backend.zh-CN.json";
 import english from "./en-US.json";
+import backendEnglish from "./backend.en-US.json";
 import { readLocale, setLocale, localizeMessage, t } from ".";
 import { pageLabel } from "../state/pages";
 import { channels, channelLabel, familyOf, familyLabel } from "../state/versionCatalog";
@@ -57,4 +58,20 @@ test("fresh installation defaults to English and persists explicit language choi
   expect(t("Accounts")).toBe("Account management");
   expect(t("Download Java {major}",{major:25})).toBe("Download Java 25");
   expect(localizeMessage("Fetching Java 25 download metadata")).toBe("Fetching Java 25 download metadata");
+});
+
+test("English diagnostics cover the Chinese catalog and preserve runtime values",()=>{
+  expect(Object.keys(backendEnglish).sort()).toEqual(Object.keys(backend).sort());
+  const placeholders=(value:string)=>[...value.matchAll(/\{(\w+)\}/g)].map(m=>m[1]).sort();
+  for(const [key,value] of Object.entries(backendEnglish)) {
+    expect(value.trim(),key).not.toBe("");
+    expect(placeholders(value),key).toEqual(placeholders(key));
+    expect(value).not.toMatch(/\p{Script=Han}/u);
+  }
+  setLocale("en-US");
+  expect(localizeMessage("Game exited abnormally: exit status: 1")).toBe("Game exited abnormally: exit status: 1. Check the game log.");
+  expect(localizeMessage("Selected Java 8 is too old; this game requires Java 21 or newer")).toContain("Select a suitable Java runtime and retry.");
+  expect(localizeMessage("Failed to save the instance library: Maximum memory exceeds currently available memory")).toContain("lower it and retry");
+  const path="/home/player/\u4e2d\u6587 $& {e}/game.log";
+  expect(localizeMessage(`Official mod loader installer failed; see log: ${path}`)).toContain(path);
 });

@@ -18,7 +18,7 @@ export function ArticleBody({html,onOpen}:{html:string;onOpen:(url:string)=>void
                 const url=informationLink(node.getAttribute("href"));
                 return url ? <Control key={key} id={`article-link-${key}`} className="article-link" onClick={()=>onOpen(url)}>{children}</Control> : <span key={key}>{children}</span>;
             }
-            const safe=["p","ul","ol","li","strong","em","b","i","code","pre","blockquote","br","hr","table","thead","tbody","tr","td","th","h2","h3","h4"];
+            const safe=["p","ul","ol","li","strong","em","b","i","code","pre","blockquote","br","hr","table","thead","tbody","tr","td","th","h2","h3","h4","h5","h6","div","section"];
             return createElement(tag==="h1"?"h2":safe.includes(tag)?tag:"span",{key},...(["br","hr"].includes(tag)?[]:children));
         }
         return Array.from(doc.body.childNodes).map((n,i)=>render(n,String(i)));
@@ -56,9 +56,11 @@ export function GamePatchNotes({version}:{version?:string}) {
     const open=(url:string)=>{setError("");void openInformation(url).catch(e=>setError(localizeMessage(e)));};
     return <section className="placeholder settings-page" aria-label={t("Patch notes")}>
         <div className="settings-group"><span>{t("Game version: {version}",{version:version??t("No instance selected")})}</span>
-        <p className="settings-description">{t("Source: Mojang. Official articles are shown in their original language.")}</p></div>
-        <StandardButton id="patch-official-site" onClick={()=>open("https://www.minecraft.net/en-us/articles")}>{t("Visit Minecraft.net")}</StandardButton>
-        {!version ? <p>{t("Select an instance to view its game patch notes.")}</p> : feed.loading ? <p role="status">{t("Loading game patch notes…")}</p> : feed.error ? <div className="settings-group"><p role="status">{t("Game patch notes could not be loaded.")}</p></div> : feed.data ? <article><h2>{feed.data.title}</h2>{feed.data.date&&<p>{feed.data.date.slice(0,10)}</p>}<ArticleBody html={feed.data.body} onOpen={open}/></article> : <p>{t("No official patch notes were found for this game version.")}</p>}
+        <div className="patch-source-row">
+        <p className="settings-description">{t("Source: Mojang. Official articles are shown in their original language.")}</p>
+        <StandardButton className="patch-source-button" id="patch-official-site" onClick={()=>open("https://www.minecraft.net/en-us/articles")}>{t("Visit Minecraft.net")}</StandardButton>
+        </div></div>
+        {!version ? <p>{t("Select an instance to view its game patch notes.")}</p> : feed.loading ? <p role="status">{t("Loading game patch notes…")}</p> : feed.error ? <div className="settings-group"><p role="status">{t("Game patch notes could not be loaded.")}</p></div> : feed.data ? <article className="patch-article"><h2>{feed.data.title}</h2>{feed.data.date&&<p>{feed.data.date.slice(0,10)}</p>}<ArticleBody html={feed.data.body} onOpen={open}/></article> : <p>{t("No official patch notes were found for this game version.")}</p>}
         <EditorialRetry id="patch-retry" loading={feed.loading} failed={feed.error} retry={feed.retry} destination="patch-official-site"/>
         {error&&<p className="config-error" role="alert">{error}</p>}
     </section>;

@@ -6,5 +6,6 @@ $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $des
 $shortcut.TargetPath = Join-Path $root 'launch.bat'
 $shortcut.WorkingDirectory = $root
 $shortcut.Description = 'A third-party powered launcher for Minecraft Java Edition with an interface similar to the official.'
+$shortcut.IconLocation = (Join-Path $root 'icon.ico') + ',0'
 $shortcut.WindowStyle = 7
 $shortcut.Save()

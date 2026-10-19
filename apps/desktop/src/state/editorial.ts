@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { invokeNative, isDesktop } from "../platform/desktop";
 const origin = "https://launchercontent.mojang.com";
+export const maintainerHomepage = "https://github.com/ImperatorVienna";
 export const homepage = "https://github.com/ImperatorVienna/MCLauncherAdvanced";
 export type News = { id: string; title: string; date: string; image: string | null; url: string };
 export type Patch = { title: string; version: string; body: string; date: string };
@@ -25,7 +26,7 @@ async function content(path:string):Promise<any> {
 export function informationLink(value:unknown):string|null {
     if(typeof value!=="string")return null;
     try {const u=new URL(value);return u.protocol==="https:" && !u.username && !u.password && !u.port &&
-        (u.hostname==="www.minecraft.net" || (u.hostname==="github.com" && (u.pathname==="/ImperatorVienna/MCLauncherAdvanced" || u.pathname.startsWith("/ImperatorVienna/MCLauncherAdvanced/")))) ? u.href : null;
+        (u.hostname==="www.minecraft.net" || (u.hostname==="github.com" && (u.pathname==="/ImperatorVienna" || u.pathname==="/ImperatorVienna/" || u.pathname==="/ImperatorVienna/MCLauncherAdvanced" || u.pathname.startsWith("/ImperatorVienna/MCLauncherAdvanced/")))) ? u.href : null;
     } catch {return null;}
 }
 export function imageLink(value:unknown):string|null {

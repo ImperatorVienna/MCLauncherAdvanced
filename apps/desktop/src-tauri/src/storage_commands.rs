@@ -16,7 +16,7 @@ impl Backend {
         session.try_lock().map_err(|_| "The launcher is already running; use the existing window")?;
         let storage = crate::loader_management::recover(&bootstrap.join(".minecraft")).and_then(|_| Storage::open(&bootstrap))
             .and_then(|storage| {
-                launcher_platform::register(&bootstrap, &app.path().data_dir().map_err(|e|e.to_string())?, include_bytes!("../icons/icon.png"))?;
+                launcher_platform::register(&bootstrap, &app.path().data_dir().map_err(|e|e.to_string())?, include_bytes!("../icons/icon.png"), include_bytes!("../icons/icon.ico"), &app.config().identifier)?;
                 crate::local_instances::discover(&storage)?;
                 crate::java_selection::reconcile(&storage)?;
                 Ok(storage)

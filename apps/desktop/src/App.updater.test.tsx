@@ -22,13 +22,18 @@ test("update notice, about focus, task isolation and failure focus recovery",asy
         expect(host.querySelector("#project-homepage")).not.toBeNull();
         expect(host.querySelector("#launcher-language")).toBeNull();
         // Each document opens independently, including third-party notices first.
-        for(const id of ["third-party-notices","project-license","third-party-notices"]) {
+        for(const id of ["privacy-notice","third-party-notices","project-license","privacy-notice"]) {
             await click(id);
             expect(host.querySelector('[role="dialog"]')).not.toBeNull();
             expect(host.querySelector(".legal-content")?.textContent?.length).toBeGreaterThan(100);
             expect(document.activeElement?.id).toBe("modal-first");
             expect(host.querySelector("main")?.inert).toBe(true);
             if(id==="project-license") expect(host.querySelector(".legal-content")?.textContent).toContain("GNU GENERAL PUBLIC LICENSE");
+            else if(id==="privacy-notice") {
+                expect(host.querySelector(".legal-content code")?.textContent).toBe("accounts.json");
+                expect(host.querySelectorAll(".legal-content li").length).toBe(5);
+                expect(host.querySelector(".legal-content")?.textContent).not.toContain("`accounts.json`");
+            }
             else expect(host.querySelector(".legal-content")?.textContent).toContain("OFL.txt");
             await key("Escape");
             expect(host.querySelector('[role="dialog"]')).toBeNull();

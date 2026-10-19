@@ -167,7 +167,16 @@ export class FocusManager {
       return;
     }
     const horizontal = action === "NavigateLeft" || action === "NavigateRight";
-    const canCrossTo = (entry: Entry) => this.canCross(current[1], entry, horizontal);
+    const canCrossTo = (entry: Entry) => {
+      if (!this.canCross(current[1], entry, horizontal)) return false;
+      // Fixed tabs remain above the scrolling content in navigation order even
+      // when offscreen content has viewport coordinates above the tab bar.
+      if (this.scope === "main" && !horizontal) {
+        if (current[1].group === "tabs" && entry.group !== "tabs") return action === "NavigateDown";
+        if (current[1].group !== "tabs" && entry.group === "tabs") return action === "NavigateUp";
+      }
+      return true;
+    };
     const explicit = current[1].neighbors?.[action];
     if (horizontal && explicit && items.some(([id, entry]) => id === explicit && canCrossTo(entry)))
       return this.focusNavigationTarget(explicit, current[1]);
@@ -196,7 +205,13 @@ export class FocusManager {
     // row must not turn a vertical move into a sideways move.
     let rowCandidates = candidates;
     if (!horizontal) {
-      const vertical = candidates.filter(c => c.edge >= -1);
+      let vertical = candidates.filter(c => c.edge >= -1);
+      // Finish traversing the scrollable content before crossing into its fixed
+      // tab bar. A clipped previous row must not lose to an overlapping header.
+      if (this.scope === "main" && this.scroll?.contains(current[1].element)) {
+        const inContent = vertical.filter(c => this.scroll!.contains(this.entries.get(c.id)!.element));
+        if (inContent.length) vertical = inContent;
+      }
       const nearest = [...vertical].sort((a, b) => a.edge - b.edge)[0];
       rowCandidates = nearest ? vertical.filter(c =>
         Math.min(c.rect.bottom, nearest.rect.bottom) - Math.max(c.rect.top, nearest.rect.top) > 1)

@@ -54,3 +54,15 @@ Do not develop or package macOS x86_64. macOS is planned for arm64 only.
 Defer Windows/Linux arm64 work until after macOS arm64 is implemented and the
 user requests those additional targets. Naming a target does not imply support;
 only deliver artifacts actually built and validated to the stated extent.
+
+## External content presentation
+
+All quoted or fetched content (official news and game patch notes, launcher
+release announcements, resource descriptions, and legal/third-party notices)
+must follow the project's local UI design standards. Sources supply content and
+semantic structure, not CSS, fonts, spacing, focus or navigation behavior.
+Use bundled Latin fonts, shared spacing tokens, consistent heading hierarchy,
+bounded wrapping and responsive tables/lists. Preserve original license wording
+and attribution. Do not inject remote HTML/styles or introduce unregistered
+interactive controls. Check narrow layouts, long text and keyboard/controller
+scrolling when changing these renderers. See docs/ui-reference/form-spacing.md.

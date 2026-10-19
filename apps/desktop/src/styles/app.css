@@ -1,5 +1,5 @@
 :root {
-  font-family: "Noto Sans", "Segoe UI", sans-serif;
+  font-family: var(--ui-font);
   color: #f4f4f4;
   background: #202020;
   font-synthesis: none;
@@ -552,7 +552,6 @@ h1 {
 .account .avatar { width: 25px; height: 25px; font-size: 18px; background: #398129; }
 .side-item { min-height: 60px; padding: 10px 13px; gap: 10px; border: 1px solid #4b4845; border-bottom: 2px solid #141414; font-size: 12px; font-weight: 400; }
 .side-item.selected { background: #242321; border: 2px solid #66615c; position: relative; font-weight: 700; }
-.side-item.selected:before { content: ''; position: absolute; left: 0; top: 18px; width: 4px; height: 23px; background: #eee; }
 .side-item small { font-size: 12px; font-weight: 700; }
 .side-symbol { font-size: 25px; }
 .grass-icon { width: 26px; height: 26px; }
@@ -596,11 +595,11 @@ h1 { font-size: 13px; letter-spacing: 0; }
 }
 
 /* User's typography reference: bold uppercase sans-serif, not a pixel font. */
-:root { font-family: "Segoe UI", "Noto Sans", "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
-.side-item.selected { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; font-weight: 700; line-height: 1.45; }
+:root { font-family: var(--ui-font); }
+.side-item.selected { font-family: var(--ui-font); font-size: 14px; font-weight: 700; line-height: 1.45; }
 .side-item.selected small { font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1.45; margin: 0; }
-.hero-wordmark { padding-top: 30px; font-family: Impact, "Arial Black", sans-serif; font-weight: 900; transform: scaleY(1.12); letter-spacing: -2px; -webkit-text-stroke: 1px #30322d; text-shadow: 0 3px #fafaf2,0 7px #6e7369,0 11px #171b15,4px 11px #171b15; }
-.hero-wordmark span { font-family: "Arial Black", "Segoe UI",sans-serif; -webkit-text-stroke: 0; font-size: 16px; letter-spacing: 5px; margin-top: 12px; }
+.hero-wordmark { padding-top: 30px; font-family: var(--ui-font); font-weight: 900; transform: scaleY(1.12); letter-spacing: -2px; -webkit-text-stroke: 1px #30322d; text-shadow: 0 3px #fafaf2,0 7px #6e7369,0 11px #171b15,4px 11px #171b15; }
+.hero-wordmark span { font-family: var(--ui-font); -webkit-text-stroke: 0; font-size: 16px; letter-spacing: 5px; margin-top: 12px; }
 
 /* Outer bevel conveys depth; the inset ring alone conveys focus. */
 :root {
@@ -726,7 +725,7 @@ html:not([data-input-mode="gamepad"]) button:focus-visible {
 .hero-brand > span {
   display: block;
   margin-top: 5px;
-  font-family: "Arial Black", "Segoe UI", sans-serif;
+  font-family: var(--ui-font);
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 4px;
@@ -738,7 +737,7 @@ html:not([data-input-mode="gamepad"]) button:focus-visible {
 .side-item,
 .side-item.selected,
 .side-item.account {
-  font-family: "Segoe UI", Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--ui-font);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.45;
@@ -829,7 +828,9 @@ html:not([data-input-mode="gamepad"]) button:focus-visible {
 .controller-guide-name { overflow-wrap: anywhere; }
 .controller-guide-body { display: flex; flex-wrap: wrap; align-items: center; gap: var(--settings-gap); }
 .controller-model { width: min(360px, 100%); height: auto; flex-shrink: 0; }
-.controller-model text { fill: white; font: 14px sans-serif; text-anchor: middle; }
+/* SVG labels must use the same bundled Latin font as the HTML guide. */
+.controller-model text, .controller-bindings dt { font-family: var(--ui-font); font-synthesis: none; }
+.controller-model text { fill: white; font-size: 14px; font-weight: 400; text-anchor: middle; }
 .controller-bindings { margin: 0; display: grid; gap: 8px; flex: 1 1 250px; max-width: 460px; min-width: 0; }
 .controller-bindings > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: center; min-height: 26px; }
 .controller-bindings dt, .controller-bindings dd { margin: 0; overflow-wrap: anywhere; display: flex; align-items: center; min-height: 1.5em; line-height: 1.5; }
@@ -1082,7 +1083,7 @@ html[lang="en-US"] .play span { letter-spacing: 0; line-height: 1.4; overflow-wr
 .update-badge { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 20px; height: 20px; background: #c63032; display: grid; place-items: center; }
 .update-badge > span { width: 4px; height: 8px; background: white; position: relative; transform: translateY(-2px); }
 .update-badge > span::after { content: ""; position: absolute; width: 4px; height: 3px; left: 0; top: 10px; background: white; }
-.release-notes { white-space: pre-wrap; overflow-wrap: anywhere; color: #b8b6b4; }
+.release-notes { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ui-font); line-height: 1.6; min-width: 0; color: #b8b6b4; }
 
 .settings-page { min-width: 0; overflow-wrap: anywhere; }
 
