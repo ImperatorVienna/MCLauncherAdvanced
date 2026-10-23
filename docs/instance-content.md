@@ -87,3 +87,19 @@ Catalog status is refreshed after file tasks and when the window regains focus;
 late requests cannot update a new instance/page. Pagination waits for status and
 focuses the first/last actionable result, falling back to search when none exist.
 This logic belongs in the content service and frontend, not host adapters.
+
+## Dependencies of universal mod releases
+
+A Modrinth version may target multiple loaders while listing their combined
+required dependencies. For project-based requirements of such a release, the
+installer excludes a dependency only when its project explicitly supports other
+loaders of that parent release and not the selected loader. Unknown/empty loader
+metadata and projects supporting the selected loader are not excluded. Exact
+game-version and loader matching remains mandatory for every installed file;
+version-pinned requirements retain their compatibility checks. Resolution errors
+identify the failing required project rather than implying the main mod is absent.
+
+Controlify 3.5.3 for Minecraft 26.3 reproduces this case: its universal release
+lists Fabric API, while its NeoForge manifest requires YACL. A live regression
+installs Controlify into temporary NeoForge 26.3 and 1.21.11 instances and verifies
+YACL is installed without Fabric API. Existing game directories are not used.

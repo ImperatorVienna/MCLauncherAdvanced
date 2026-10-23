@@ -306,5 +306,6 @@
   "Skin upload failed; retry": "Skin upload failed; retry",
   "Too many skin updates; try again later": "Too many skin updates; try again later",
   "Skin update could not be confirmed; reload the account skin": "Skin update could not be confirmed; reload the account skin",
-  "Invalid skin URL": "Invalid skin URL"
+  "Invalid skin URL": "Invalid skin URL",
+  "Required dependency {id} could not be resolved: {e}": "Required dependency {id} could not be resolved: {e}"
 }

@@ -14,7 +14,7 @@ pub struct Project { pub id:String,pub title:String,pub description:String }
 #[derive(Serialize)]
 pub struct Search { pub projects:Vec<Project>,pub more:bool }
 #[derive(Clone,Debug)]
-pub struct Release { pub project:String,pub version:String,pub name:String,pub url:String,pub hash:String,pub size:u64,pub published:String,pub dependencies:Vec<String> }
+pub struct Release { pub project:String,pub version:String,pub name:String,pub url:String,pub hash:String,pub size:u64,pub published:String,pub dependencies:Vec<String>,pub loaders:Vec<String> }
 pub struct Provider { client:Client }
 impl Provider {
     pub fn new()->Result<Self> {
@@ -64,11 +64,18 @@ impl Provider {
             mr_release(versions.first().ok_or("No compatible downloadable version was found")?)
         }
     }
-    fn dependency(&self,item:&Instance,kind:Kind,id:&str,local:&[(String,bool,String)],identities:&serde_json::Map<String,Value>)->Result<Option<Release>> {
+    fn dependency(&self,item:&Instance,kind:Kind,id:&str,parent_loaders:&[String],local:&[(String,bool,String)],identities:&serde_json::Map<String,Value>)->Result<Option<Release>> {
         if let Some(id)=id.strip_prefix("project:") {
             valid_id(id)?;
             if dependency_present(id,local,identities) {return Ok(None);}
-            return self.latest(item,kind,id).map(Some);
+            // A universal release may list requirements for all its loader targets.
+            // Exclude only projects explicitly confined to another parent loader.
+            // Missing versions of projects supporting this loader still fail normally.
+            if matches!(kind,Kind::Mods) && parent_loaders.len()>1 {
+                let project=self.api(&format!("/project/{id}"),&[],None)?;
+                if other_loader_dependency(&project,item,parent_loaders) {return Ok(None);}
+            }
+            return self.latest(item,kind,id).map(Some).map_err(|e|format!("Required dependency {id} could not be resolved: {e}"));
         }
         let id=id.strip_prefix("version:").ok_or("Invalid provider project")?;
         valid_id(id)?;
@@ -96,6 +103,15 @@ fn compatible(v:&Value,item:&Instance,kind:Kind)->bool {
     v["game_versions"].as_array().is_some_and(|a|a.iter().any(|v|v==&item.minecraft_version)) &&
     (!matches!(kind,Kind::Mods) || item.loader.as_ref().is_some_and(|l|v["loaders"].as_array().is_some_and(|a|a.iter().any(|v|v==&l.kind))))
 }
+// Modrinth project facets aggregate loader support across versions. Use them
+// only to rule out another loader's requirement, never to relax file matching.
+fn other_loader_dependency(project:&Value,item:&Instance,parent_loaders:&[String])->bool {
+    let Some(loader)=item.loader.as_ref() else {return false;};
+    if !parent_loaders.contains(&loader.kind) || parent_loaders.len()<2 {return false;}
+    let Some(loaders)=project["loaders"].as_array() else {return false;};
+    !loaders.is_empty() && loaders.iter().all(|value|value.as_str().is_some_and(|other|
+        other!=loader.kind && parent_loaders.iter().any(|parent|parent==other)))
+}
 // Existing dependencies are user-managed. Provider version pins choose what to
 // fetch only when a dependency is absent; they must not force a replacement.
 fn dependency_present(project:&str,local:&[(String,bool,String)],identities:&serde_json::Map<String,Value>)->bool {
@@ -105,6 +121,7 @@ fn mr_release(v:&Value)->Result<Release> {
     let files=array(&v["files"])?;
     let f=files.iter().find(|f|f["primary"]==true).or(files.first()).ok_or("No downloadable content file")?;
     Ok(Release{project:string(v,"project_id")?,version:string(v,"id")?,name:string(f,"filename")?,url:string(f,"url")?,hash:string(&f["hashes"],"sha1")?,size:f["size"].as_u64().ok_or("Invalid content file size")?,published:string(v,"date_published")?,
+        loaders: v["loaders"].as_array().map(|a|a.iter().filter_map(|v|v.as_str().map(str::to_owned)).collect()).unwrap_or_default(),
         dependencies: v["dependencies"].as_array().map(|a|a.iter().filter(|d|d["dependency_type"]=="required").map(|d|d["version_id"].as_str().map(|v|format!("version:{v}")).or_else(||d["project_id"].as_str().map(|v|format!("project:{v}"))).ok_or_else(||"A required dependency cannot be resolved; install it manually".into())).collect::<Result<Vec<_>>>()).transpose()?.unwrap_or_default()})
 }
 // Hash archives incrementally: high-resolution packs can exceed the former
@@ -281,7 +298,7 @@ pub fn install(root:&Path,item:&Instance,kind:Kind,project:&str,update:Option<Up
             }
         }
         for dependency in &release.dependencies {
-            if let Some(missing)=provider.dependency(item,kind,dependency,&local,&identities)? {queue.push(missing);}
+            if let Some(missing)=provider.dependency(item,kind,dependency,&release.loaders,&local,&identities)? {queue.push(missing);}
         }
         file_spec(&release,kind)?;
         plan.push(release);
@@ -366,7 +383,7 @@ mod tests {
     fn catalog_actions_preserve_disabled_files_and_never_downgrade_or_choose_duplicates() {
         let local=vec![("renamed.jar".into(),false,"hash".into())];
         let identities=json!({"hash":{"project_id":"p","id":"v1","date_published":"2026-01-01"}}).as_object().unwrap().clone();
-        let mut latest=Release{project:"p".into(),version:"v2".into(),name:"new.jar".into(),url:String::new(),hash:String::new(),size:0,published:"2026-02-01".into(),dependencies:vec![]};
+        let mut latest=Release{project:"p".into(),version:"v2".into(),name:"new.jar".into(),url:String::new(),hash:String::new(),size:0,published:"2026-02-01".into(),dependencies:vec![],loaders:vec![]};
         let state=catalog_state("p",&local,&identities,Some(&latest));
         assert!(state.installed);let update=state.update.unwrap();assert!(!update.enabled);assert_eq!(update.name,"renamed.jar");
         assert!(!catalog_state("absent",&local,&identities,None).installed);
@@ -425,12 +442,12 @@ mod tests {
             fs::write(directory.join(name),b"existing dependency").unwrap();
             let local=local_files(root.path(),kind).unwrap();
             let identities=serde_json::Map::from_iter([(local[0].2.clone(),json!({"project_id":"dependency","id":"different-version"}))]);
-            assert!(provider.dependency(&item,kind,"project:dependency",&local,&identities).unwrap().is_none());
+            assert!(provider.dependency(&item,kind,"project:dependency",&[],&local,&identities).unwrap().is_none());
             assert_eq!(fs::read(directory.join(name)).unwrap(),b"existing dependency");
             if matches!(kind,Kind::Mods) {
                 crate::content::set_enabled(root.path(),kind,name,false).unwrap();
                 let local=local_files(root.path(),kind).unwrap();
-                assert!(provider.dependency(&item,kind,"project:dependency",&local,&identities).unwrap().is_none());
+                assert!(provider.dependency(&item,kind,"project:dependency",&[],&local,&identities).unwrap().is_none());
                 assert!(!directory.join(name).exists());
             }
         }
@@ -467,6 +484,31 @@ mod tests {
         assert!(files.iter().any(|(name,_,hash)|name=="large.zip" && hash.len()==40));
     }
     #[test]
+    fn universal_dependencies_only_exclude_explicit_other_loader_projects() {
+        let mut item=instance();item.minecraft_version="26.3".into();item.loader.as_mut().unwrap().kind="neoforge".into();
+        let universal=vec!["fabric".into(),"neoforge".into()];
+        assert!(other_loader_dependency(&json!({"loaders":["fabric"]}),&item,&universal));
+        for data in [json!({"loaders":["neoforge"]}),json!({"loaders":["fabric","neoforge"]}),json!({"loaders":["forge"]}),json!({"loaders":[]}),json!({}),json!({"loaders":[null]})] {
+            assert!(!other_loader_dependency(&data,&item,&universal));
+        }
+        assert!(!other_loader_dependency(&json!({"loaders":["fabric"]}),&item,&["neoforge".into()]));
+        item.loader.as_mut().unwrap().kind="fabric".into();
+        assert!(!other_loader_dependency(&json!({"loaders":["fabric"]}),&item,&universal));
+    }
+    #[test]
+    #[ignore = "Uses live Modrinth metadata and downloads into temporary instances"]
+    fn live_controlify_neoforge_install() {
+        for game in ["26.3","1.21.11"] {
+            let mut item=instance();item.minecraft_version=game.into();item.loader.as_mut().unwrap().kind="neoforge".into();
+            let root=tempfile::tempdir().unwrap();
+            install(root.path(),&item,Kind::Mods,"DOUdJVEm",None,&std::sync::atomic::AtomicBool::new(false),&|_|{}).unwrap();
+            let files=crate::content::scan(root.path(),Kind::Mods,false).unwrap();
+            assert!(files.entries.iter().any(|f|f.name.starts_with("controlify-")));
+            assert!(files.entries.iter().any(|f|f.name.contains("yet_another_config_lib")));
+            assert!(!files.entries.iter().any(|f|f.name.starts_with("fabric-api-")));
+        }
+    }
+    #[test]
     fn exact_version_and_loader_are_required() {
         let item=instance();
         assert!(compatible(&json!({"game_versions":["1.21.1"],"loaders":["fabric"]}),&item,Kind::Mods));
@@ -477,7 +519,7 @@ mod tests {
     #[test]
     fn provider_paths_and_downloads_are_scoped() {
         for invalid in ["../escape","one/two","?q=anything",""]{assert!(valid_id(invalid).is_err());}
-        let mut release=Release{project:"test".into(),version:"v1".into(),name:"mod.jar".into(),url:"https://cdn.modrinth.com/data/test/mod.jar".into(),hash:"a".repeat(40),size:20,published:"2025".into(),dependencies:vec![]};
+        let mut release=Release{project:"test".into(),version:"v1".into(),name:"mod.jar".into(),url:"https://cdn.modrinth.com/data/test/mod.jar".into(),hash:"a".repeat(40),size:20,published:"2025".into(),dependencies:vec![],loaders:vec![]};
         assert!(file_spec(&release,Kind::Mods).is_ok());
         release.name="../mod.jar".into();assert!(file_spec(&release,Kind::Mods).is_err());
         release.name="mod.jar".into();release.url="https://example.com/mod.jar".into();assert!(file_spec(&release,Kind::Mods).is_err());

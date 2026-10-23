@@ -8,11 +8,11 @@ This independent desktop launcher supports keyboard, mouse and controller naviga
 
 ## Release status
 
-The current version is **1.0.3**, available for Linux and Windows x86_64. Platform validation details are listed below.
+The current version is **1.0.4**, available for Linux and Windows x86_64. Platform validation details are listed below.
 
-See the [1.0.3 release notes](docs/release-notes/1.0.3.en-US.md).
+See the [1.0.4 release notes](docs/release-notes/1.0.4.en-US.md).
 
-Version 1.0.3 fixes Minecraft account sign-in, skin loading and skin updates. It adds a Copy authorization code button, account skin avatars and previews, skin uploads, and Classic/Slim arm selection. New interface text is available in English and Simplified Chinese.
+Version 1.0.4 fixes installation failures for some mods supporting multiple loaders caused by dependencies exclusive to another loader, and improves dependency resolution errors in English and Simplified Chinese.
 
 ## Features
 
@@ -44,7 +44,7 @@ Version 1.0.2 introduced the MCLA icon for the launcher window, desktop integrat
 | Platform | Package | Validation status |
 | --- | --- | --- |
 | Linux x86_64, glibc | AppImage | Game installation and launch tested during development |
-| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.3 has been cross-compiled and packaged, but still requires testing on Windows |
+| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.4 has been cross-compiled and packaged, but still requires testing on Windows |
 | macOS ARM64 | Planned | No build available |
 
 Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not include or automatically install it. Wine/Proton is not a substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other processor architectures are not current targets.

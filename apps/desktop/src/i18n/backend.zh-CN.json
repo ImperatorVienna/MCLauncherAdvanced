@@ -306,5 +306,6 @@
   "Skin upload failed; retry": "皮肤上传失败，请重试",
   "Too many skin updates; try again later": "皮肤更新过于频繁，请稍后重试",
   "Skin update could not be confirmed; reload the account skin": "无法确认皮肤更新结果，请重新加载账户皮肤",
-  "Invalid skin URL": "皮肤地址无效"
+  "Invalid skin URL": "皮肤地址无效",
+  "Required dependency {id} could not be resolved: {e}": "无法解析必需依赖 {id}：{e}"
 }

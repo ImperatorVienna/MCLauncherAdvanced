@@ -87,3 +87,13 @@ test("skin and clipboard diagnostics translate through the native error path", (
   setLocale("zh-CN");
   expect(t("Skin updated")).toBe(ui["Skin updated"]);
 });
+
+test("dependency errors preserve the project ID and translate the nested cause", () => {
+  const key = "Required dependency {id} could not be resolved: {e}";
+  const cause = "No compatible downloadable version was found";
+  for (const language of ["zh-CN", "en-US"] as const) {
+    setLocale(language);
+    expect(localizeMessage(`Required dependency P7dR8mSH could not be resolved: ${cause}`))
+      .toBe(t(key, {id:"P7dR8mSH", e:localizeMessage(cause)}));
+  }
+});
