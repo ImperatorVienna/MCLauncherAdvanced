@@ -29,6 +29,16 @@ test("language selection updates in place and restores keyboard/controller focus
     expect(manager.activeId()).toBe("launcher-language");
     expect(iconNames.grass).not.toBe("Grass block");
     act(()=>manager.dispatch("Confirm"));
+    act(()=>manager.dispatch("NavigateDown"));
+    await act(async()=>manager.dispatch("Confirm"));
+    expect(readLocale()).toBe("zh-TW");
+    expect(host.textContent).toContain("繁體中文");
+    expect(manager.activeId()).toBe("launcher-language");
+    act(()=>manager.dispatch("Confirm"));
+    act(()=>manager.dispatch("NavigateUp"));
+    await act(async()=>manager.dispatch("Confirm"));
+    expect(readLocale()).toBe("zh-CN");
+    act(()=>manager.dispatch("Confirm"));
     act(()=>manager.dispatch("NavigateUp"));
     await act(async()=>manager.dispatch("Confirm"));
     expect(readLocale()).toBe("en-US");

@@ -17,22 +17,35 @@ fn packaged_executable()->Result<Option<PathBuf>,std::io::Error> {
     #[cfg(not(all(target_os="linux",not(debug_assertions))))]
     {Ok(None)}
 }
-pub fn register(root:&Path,data:&Path,icon:&[u8],windows_icon:&[u8],desktop_id:&str)->Result<(),String> {
+/// Host registration inputs supplied by application orchestration.
+pub struct Registration<'a> {
+    pub root: &'a Path,
+    pub data: &'a Path,
+    pub icon: &'a [u8],
+    pub windows_icon: &'a [u8],
+    pub desktop_id: &'a str,
+    pub desktop_folder: Option<&'a Path>,
+}
+pub fn register(options: Registration<'_>)->Result<(),String> {
+    let Registration {root,data,icon,windows_icon,desktop_id,desktop_folder}=options;
     #[cfg(target_os="linux")]
-    if let Some(image)=packaged_executable().map_err(|e|e.to_string())? {
-        launcher_core::storage::atomic_write(&root.join("icon.png"),icon)?;
+    {
         let _=windows_icon;
-        let integration=linux::Integration{script:root.join("launch.sh"),desktop:data.join("applications/minecraft-java-launcher.desktop")};
-        integration.register(&image)?;
-        integration.register_identity(desktop_id)?;
+        if let Some(image)=packaged_executable().map_err(|e|e.to_string())? {
+            linux::validate_desktop_id(desktop_id)?;
+            launcher_core::storage::atomic_write(&root.join("icon.png"),icon)?;
+            let integration=linux::Integration {script:root.join("launch.sh"),desktop:data.join("applications").join(format!("{desktop_id}.desktop"))};
+            integration.register(&image)?;
+            integration.migrate_legacy_entries(desktop_folder)?;
+        }
     }
     #[cfg(windows)]
-    { let _=(data,icon,desktop_id); if !cfg!(debug_assertions) {
+    { let _=(data,icon,desktop_id,desktop_folder); if !cfg!(debug_assertions) {
         launcher_core::storage::atomic_write(&root.join("icon.ico"),windows_icon)?;
         windows::register(root)?;
     } }
     #[cfg(not(any(target_os="linux",windows)))]
-    let _=(root,data,icon,windows_icon,desktop_id);
+    let _=(root,data,icon,windows_icon,desktop_id,desktop_folder);
     Ok(())
 }
 pub fn open_external(target:impl AsRef<std::ffi::OsStr>)->Result<(),String> {

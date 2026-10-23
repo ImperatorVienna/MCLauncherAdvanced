@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, expect, test } from "vitest";
+import traditional from "./zh-TW.json";
+import backendTraditional from "./backend.zh-TW.json";
 import ui from "./zh-CN.json";
 import backend from "./backend.zh-CN.json";
 import english from "./en-US.json";
@@ -44,7 +46,7 @@ test("English catalog covers every UI message and preserves placeholders",()=>{
   for(const [key,value] of Object.entries(english)) {
     expect(value.trim(),key).not.toBe("");
     expect(placeholders(value),key).toEqual(placeholders(key));
-    if(key!=="Simplified Chinese")expect(value).not.toMatch(/\p{Script=Han}/u);
+    if(key!=="Simplified Chinese" && key!=="Traditional Chinese")expect(value).not.toMatch(/\p{Script=Han}/u);
   }
 });
 test("fresh installation defaults to English and persists explicit language choice",()=>{
@@ -91,9 +93,33 @@ test("skin and clipboard diagnostics translate through the native error path", (
 test("dependency errors preserve the project ID and translate the nested cause", () => {
   const key = "Required dependency {id} could not be resolved: {e}";
   const cause = "No compatible downloadable version was found";
-  for (const language of ["zh-CN", "en-US"] as const) {
+  for (const language of ["zh-CN", "zh-TW", "en-US"] as const) {
     setLocale(language);
     expect(localizeMessage(`Required dependency P7dR8mSH could not be resolved: ${cause}`))
       .toBe(t(key, {id:"P7dR8mSH", e:localizeMessage(cause)}));
   }
+});
+
+
+test("Traditional Chinese covers every UI and backend template without changing placeholders",()=>{
+  expect(Object.keys(traditional).sort()).toEqual(Object.keys(ui).sort());
+  expect(Object.keys(backendTraditional).sort()).toEqual(Object.keys(backend).sort());
+  const placeholders=(s:string)=>[...s.matchAll(/\{(\w+)\}/g)].map(m=>m[1]).sort();
+  for(const [key,value] of Object.entries({...backendTraditional,...traditional})) {
+    expect(value.trim(),key).not.toBe("");
+    expect(placeholders(value),key).toEqual(placeholders(key));
+  }
+  setLocale("zh-TW");
+  expect(readLocale()).toBe("zh-TW");
+  expect(document.documentElement.lang).toBe("zh-TW");
+  expect(t("Accounts")).toBe("帳戶管理");
+  expect(t("Copy authorization code")).toBe("複製授權碼");
+  expect(t("Skin updated")).toBe("已更新皮膚");
+  const path="/home/简体中文/遊戲 $& {e}/game.log";
+  expect(localizeMessage(`Official mod loader installer failed; see log: ${path}`)).toContain(path);
+  expect(localizeMessage("Failed to save the instance library: Invalid Java path"))
+    .toBe(t("Failed to save the instance library: {e}",{e:t("Invalid Java path")}));
+  expect(localizeMessage("Unknown OS error")).toBe("Unknown OS error");
+  localStorage.setItem("launcher.language.v1","unsupported");
+  expect(readLocale()).toBe("en-US");
 });

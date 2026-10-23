@@ -90,3 +90,11 @@ are no releases. Windows helper replacement/restart still requires real Windows
 acceptance testing; cross-compilation does not replace that test. The first two
 published test versions can be used for that final acceptance without changing
 this implementation.
+
+## Localized announcements (1.0.5 onward)
+
+Each release tag must contain `docs/release-notes/<version>.<locale>.md` for
+`en-US`, `zh-CN` and `zh-TW`. The announcements page requests only the selected
+language from that tag; the multilingual GitHub release body is not rendered.
+A missing translation or failed request displays a localized notice without
+falling back to another language. Language changes discard stale responses.

@@ -21,7 +21,7 @@ The actual launcher executable's parent directory is the storage root. Linux App
     versions/<configuration name>/
 ```
 
-Each AppImage startup refreshes launch.sh and the user's applications/minecraft-java-launcher.desktop entry. The desktop entry is named MC Launcher Advanced and points to the script's absolute path. The script resolves the executable relative to its own directory, uses exec, and preserves arguments and environment (including Steam identifiers). The lock is per launcher directory. Moving a folder requires running the AppImage once and re-adding its entry to Steam. Existing Steam shortcuts are not edited.
+Each AppImage startup refreshes launch.sh and the user's applications/minecraft.launcher.advanced.desktop entry. The desktop entry is named MC Launcher Advanced and points to the script's absolute path. The script resolves the executable relative to its own directory, uses exec, and preserves arguments and environment (including Steam identifiers). The lock is per launcher directory. Moving a folder requires running the AppImage once and re-adding its entry to Steam. Existing Steam shortcuts are not edited.
 
 Self-update uses the new release asset filename in the same directory and appends `.previous` to the old executable. Downloads are staged in a unique `.launcher-update-*` directory beside it and SHA-256 verified before replacement. Failed updates retain `apply.log`; successful replacement startup removes its complete staging directory; see [launcher updates](launcher-updates.md).
 
@@ -56,3 +56,5 @@ changed. Moving the directory requires running the main EXE once to refresh the
 desktop shortcut. Renaming/removing the BAT itself invalidates the shortcut.
 Self-update uses a PowerShell helper that waits for the old EXE to exit before replacement. The r32 Windows test build enables game installation with native adapters;
 real-device validation remains pending. See platform-boundary.md.
+
+Linux registration migrates the two legacy application entries to the single visible identity entry. Desktop symlinks targeting the old entries are retargeted before those entries are removed. Windows registration is unchanged.

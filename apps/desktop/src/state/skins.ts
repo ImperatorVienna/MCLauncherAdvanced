@@ -95,7 +95,7 @@ export function useSkins(selectedAccount: string | null = null, accountRevision 
         finally { uploadLock.current = false; setUploading(false); }
     }
     const all = [...(accountSkin ? [accountSkin] : []), ...displaySkins(data)];
-    const current = (account: string | null) => all.find(s => s.id === (account ? data.assignments[account] : "")) ?? accountSkin ?? all.find(s => s.id === builtinSkins[0].id)!;
+    const current = () => accountSkin ?? all.find(s => s.id === builtinSkins[0].id)!;
     return { data, all, current, accountSkin, commit, apply, applied, canApply: native && !!selectedAccount, error: uploadError || error || accountSkinError, busy: busy || !ready || uploading };
 }
 export async function importSkin(file: File): Promise<string> {

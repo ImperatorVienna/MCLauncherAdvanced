@@ -14,20 +14,50 @@ pub fn script(image: &Path) -> Result<String, String> {
     let filename = image.file_name().and_then(|s|s.to_str()).ok_or("Invalid launcher filename")?;
     Ok(format!("#!/bin/sh\nset -eu\nbase=$(CDPATH= cd -- \"$(dirname -- \"$0\")\" && pwd -P)\nimage=\"$base\"/{}\nexec \"$image\" \"$@\"\n", quote_shell(filename)))
 }
+pub(crate) fn validate_desktop_id(desktop_id: &str) -> Result<(), String> {
+    if desktop_id.is_empty() || desktop_id == "." || desktop_id == ".." || !desktop_id.bytes().all(|c| c.is_ascii_alphanumeric() || b".-_".contains(&c)) {
+        return Err("Invalid desktop application ID".into());
+    }
+    Ok(())
+}
+const LEGACY_ENTRIES: [&str; 2] = ["minecraft-java-launcher.desktop", "dev.personal.javalauncher.desktop"];
 impl Integration {
-    /// Wayland resolves window icons through a desktop file matching the GTK ID.
-    /// Keep the existing launcher entry (and Steam references) stable; the alias
-    /// is hidden from application menus to avoid a duplicate launcher entry.
-    pub fn register_identity(&self, desktop_id: &str) -> Result<(), String> {
-        if desktop_id.is_empty() || !desktop_id.bytes().all(|c| c.is_ascii_alphanumeric() || b".-_".contains(&c)) {
-            return Err("Invalid desktop application ID".into());
-        }
-        let alias = self.desktop.with_file_name(format!("{desktop_id}.desktop"));
-        if alias == self.desktop { return Ok(()); }
+    /// Migrate only known legacy filenames in this user's applications directory.
+    /// Retarget desktop symlinks before removing their old application entries.
+    pub fn migrate_legacy_entries(&self, desktop_folder: Option<&Path>) -> Result<(), String> {
         let entry = fs::read_to_string(&self.desktop).map_err(err)?;
-        atomic_write(&alias, format!("{entry}NoDisplay=true\nStartupWMClass={desktop_id}\n").as_bytes())
+        if !entry.starts_with("[Desktop Entry]\n") || entry.lines().any(|line| line == "NoDisplay=true" || line == "Hidden=true") {
+            return Err("New desktop entry is not visible".into());
+        }
+        for name in LEGACY_ENTRIES {
+            let old = self.desktop.with_file_name(name);
+            if old == self.desktop { continue; }
+            if let Some(folder) = desktop_folder {
+                let shortcut = folder.join(name);
+                if let Ok(target) = fs::read_link(&shortcut) {
+                    let target = if target.is_absolute() { target } else { folder.join(target) };
+                    if target == old {
+                        // Keep the shortcut's filename stable; its displayed Name comes
+                        // from the single canonical entry. An atomic rename avoids gaps.
+                        let temporary = folder.join(format!(".{name}.migration-{}",std::process::id()));
+                        std::os::unix::fs::symlink(&self.desktop,&temporary).map_err(err)?;
+                        if let Err(error) = fs::rename(&temporary,&shortcut) {
+                            let _=fs::remove_file(&temporary); return Err(err(error));
+                        }
+                    }
+                }
+            }
+            match fs::remove_file(&old) {
+                Ok(()) => {},
+                Err(error) if error.kind()==std::io::ErrorKind::NotFound => {},
+                Err(error) => return Err(err(error)),
+            }
+        }
+        Ok(())
     }
     pub fn register(&self, image: &Path) -> Result<(), String> {
+        let desktop_id=self.desktop.file_stem().and_then(|s|s.to_str()).ok_or("Invalid desktop application ID")?;
+        validate_desktop_id(desktop_id)?;
         let content = script(image)?;
         atomic_write(&self.script, content.as_bytes())?;
         #[cfg(unix)] {
@@ -42,7 +72,7 @@ impl Integration {
         let icon_entry = if icon.is_file() {
             format!("Icon={}\n", icon.to_str().ok_or("Icon path is not valid UTF-8")?.replace('\\', "\\\\"))
         } else { String::new() };
-        atomic_write(&self.desktop, format!("[Desktop Entry]\nType=Application\nName=MC Launcher Advanced\nComment=A third-party powered launcher for Minecraft Java Edition with an interface similar to the official.\nExec=\"{escaped}\"\n{icon_entry}Terminal=false\nCategories=Game;\n").as_bytes())
+        atomic_write(&self.desktop, format!("[Desktop Entry]\nType=Application\nName=MC Launcher Advanced\nComment=A third-party powered launcher for Minecraft Java Edition with an interface similar to the official.\nExec=\"{escaped}\"\n{icon_entry}Terminal=false\nCategories=Game;\nStartupWMClass={desktop_id}\n").as_bytes())
     }
 }
 
@@ -50,21 +80,35 @@ impl Integration {
     use super::*;
     use launcher_core::storage::Storage;
     fn stamp()->String {format!("{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos())}
-    #[test] fn desktop_identity_keeps_icon_and_portable_entry() {
+    #[test] fn desktop_identity_migrates_to_one_visible_entry() {
         let root=std::env::temp_dir().join(format!("desktop-identity-{}",stamp()));
-        fs::create_dir_all(&root).unwrap();
-        let image=root.join("launcher.AppImage"); fs::write(&image,b"package").unwrap();
+        let apps=root.join("applications");let desktop=root.join("Desktop");
+        fs::create_dir_all(&apps).unwrap();fs::create_dir_all(&desktop).unwrap();
+        let image=root.join("launcher.AppImage");fs::write(&image,b"package").unwrap();
         fs::write(root.join("icon.png"),b"icon").unwrap();
-        let integration=Integration {script:root.join("launch.sh"),desktop:root.join("legacy.desktop")};
-        integration.register(&image).unwrap();
-        integration.register_identity("dev.personal.javalauncher").unwrap();
-        let legacy=fs::read_to_string(&integration.desktop).unwrap();
-        let alias=fs::read_to_string(root.join("dev.personal.javalauncher.desktop")).unwrap();
-        assert!(alias.starts_with(&legacy));
-        assert!(alias.contains("Icon="));
-        assert!(alias.contains("NoDisplay=true\nStartupWMClass=dev.personal.javalauncher\n"));
-        assert!(!legacy.contains("NoDisplay"));
-        assert!(integration.register_identity("../bad").is_err());
+        for name in LEGACY_ENTRIES {
+            fs::write(apps.join(name),"old entry").unwrap();
+            std::os::unix::fs::symlink(apps.join(name),desktop.join(name)).unwrap();
+        }
+        fs::write(apps.join("other.desktop"),"unrelated").unwrap();
+        let integration=Integration {script:root.join("launch.sh"),desktop:apps.join("minecraft.launcher.advanced.desktop")};
+        // Failed registration must not remove the old entries.
+        assert!(integration.migrate_legacy_entries(Some(&desktop)).is_err());
+        assert!(apps.join(LEGACY_ENTRIES[0]).exists());
+        for _ in 0..2 {
+            integration.register(&image).unwrap();
+            integration.migrate_legacy_entries(Some(&desktop)).unwrap();
+        }
+        let entry=fs::read_to_string(&integration.desktop).unwrap();
+        assert!(entry.contains("Name=MC Launcher Advanced\n"));assert!(entry.contains("Icon="));
+        assert!(entry.contains("StartupWMClass=minecraft.launcher.advanced\n"));
+        assert!(!entry.contains("NoDisplay"));assert!(!entry.contains("Hidden="));
+        for name in LEGACY_ENTRIES {
+            assert!(!apps.join(name).exists());
+            assert_eq!(fs::read_link(desktop.join(name)).unwrap(),integration.desktop);
+        }
+        assert_eq!(fs::read_to_string(apps.join("other.desktop")).unwrap(),"unrelated");
+        assert!(validate_desktop_id("../bad").is_err());
         fs::remove_dir_all(root).unwrap();
     }
     #[cfg(unix)]

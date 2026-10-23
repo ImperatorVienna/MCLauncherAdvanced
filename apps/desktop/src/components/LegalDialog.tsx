@@ -1,6 +1,7 @@
 import license from "../../../../LICENSE?raw";
 import assetNotices from "../../../../ASSET-NOTICES.md?raw";
 import privacyEnglish from "../../../../PRIVACY.md?raw";
+import privacyTraditional from "../../../../PRIVACY.zh-TW.md?raw";
 import privacyChinese from "../../../../PRIVACY.zh-CN.md?raw";
 import { t, useLocale } from "../i18n";
 import { DialogText } from "./DialogText";
@@ -55,7 +56,7 @@ export function LegalDialog({kind,onClose}:{kind:LegalDocument;onClose:()=>void}
                         </section>;
                     })}
                 </section>
-            </article> : kind==="privacy" ? <article className="third-party-document" lang={locale}><DocumentSections text={locale==="zh-CN" ? privacyChinese : privacyEnglish}/></article> : undefined}
+            </article> : kind==="privacy" ? <article className="third-party-document" lang={locale}><DocumentSections text={locale==="zh-TW" ? privacyTraditional : locale==="zh-CN" ? privacyChinese : privacyEnglish}/></article> : undefined}
         </DialogText>
         <div className="config-actions"><StandardButton id="legal-close" scope="modal" onClick={onClose}>{t("Close")}</StandardButton></div>
     </div>;

@@ -9,17 +9,19 @@ import { SkinPreview } from "../components/SkinPreview";
 import { SkinPortrait } from "../components/SkinPortrait";
 export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> }) {
     const manager = useContext(Navigation);
-    const current = library.current(null);
+    const current = library.current();
     const [selectedId,setSelectedId] = useState<string | null>(null);
     const [officialModel, setOfficialModel] = useState<SkinModel | null>(null);
     const all = library.all.map(s => s.id.startsWith("@") && officialModel ? {...s, model: officialModel} : s);
     const selected = all.find(s => s.id === (selectedId ?? current.id)) ?? current;
     const [draft,setDraft] = useState<Skin | null>(null), [deleting,setDeleting] = useState(false), [reading,setReading] = useState(false), [error,setError] = useState("");
     const file = useRef<HTMLInputElement>(null), importing = useRef(false), alive = useRef(true);
+    const returnFocus = useRef("skin-add");
+    const restoreFocus = (id: string) => requestAnimationFrame(() => { if (alive.current) manager.focus(id); });
     const busy = library.busy || reading;
     const editing = !!draft || deleting;
     useLayoutEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
-    const cancel = () => { if (!busy) { setDraft(null); setDeleting(false); setError(""); requestAnimationFrame(() => manager.focus("skin-add")); } return true; };
+    const cancel = () => { if (!busy) { setDraft(null); setDeleting(false); setError(""); restoreFocus(returnFocus.current); } return true; };
     useLayoutEffect(() => {
         if (!editing) return;
         manager.cancelEditor = cancel;
@@ -42,13 +44,13 @@ export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> })
         if (!draft || !validName || !draft.png) return;
         const item = {...draft,name:draft.name.trim()};
         const exists = library.data.skins.some(s => s.id === item.id);
-        if (await library.commit({...library.data,skins:exists ? library.data.skins.map(s => s.id === item.id ? item : s) : [...library.data.skins,item]})) {
-            setSelectedId(item.id); setDraft(null); requestAnimationFrame(() => manager.focus(`skin-card-${item.id}`));
+        if (await library.commit({...library.data,skins:exists ? library.data.skins.map(s => s.id === item.id ? item : s) : [...library.data.skins,item]}) && alive.current) {
+            setSelectedId(item.id); setDraft(null); restoreFocus(`skin-card-${item.id}`);
         }
     }
     async function erase() {
         if (selected.builtin) return;
-        if (await library.commit(removeSkin(library.data,selected.id))) { setDeleting(false); setSelectedId(builtinSkins[0].id); requestAnimationFrame(() => manager.focus("skin-add")); }
+        if (await library.commit(removeSkin(library.data,selected.id)) && alive.current) { setDeleting(false); setSelectedId(builtinSkins[0].id); restoreFocus("skin-add"); }
     }
     return <section className="skins-page" aria-label={t("Skin library")}>
         <div className="skins-layout">
@@ -59,14 +61,14 @@ export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> })
                 <p className="skin-notice">{t("Choose an arm model, then use the skin to update your Minecraft account.")}</p>
                 {!editing && <div className="skin-actions">
                     <StandardButton id="skin-use" tone="green" disabled={busy || !library.canApply} onClick={() => { void library.apply(selected).then(ok => { if (ok && alive.current) setOfficialModel(null); }); }}>{t("Use skin")}</StandardButton>
-                    <StandardButton id="skin-edit" disabled={busy || selected.builtin} onClick={() => { setError(""); setDraft({id:selected.id,name:selected.name,model:selected.model,png:selected.png}); }}>{t("Edit")}</StandardButton>
-                    <StandardButton id="skin-delete" tone="red" disabled={busy || selected.builtin} onClick={() => setDeleting(true)}>{t("Delete")}</StandardButton>
+                    <StandardButton id="skin-edit" disabled={busy || selected.builtin} onClick={() => { returnFocus.current="skin-edit"; setError(""); setDraft({id:selected.id,name:selected.name,model:selected.model,png:selected.png}); }}>{t("Edit")}</StandardButton>
+                    <StandardButton id="skin-delete" tone="red" disabled={busy || selected.builtin} onClick={() => { returnFocus.current="skin-delete"; setDeleting(true); }}>{t("Delete")}</StandardButton>
                 </div>}
             </section>
             <section className="skin-library" aria-label={t("Skin library")}>
                 <h2>{t("Skin library")}</h2>
                 <div className="skin-grid">
-                    <div className="skin-library-item"><Control id="skin-add" className="skin-card skin-add" disabled={busy || editing || library.data.skins.length>=100} onClick={() => { setError(""); setDraft({id:crypto.randomUUID(),name:"",model:"default",png:""}); }}><span aria-hidden="true">＋</span>{t("Add skin")}</Control><span className="standard-button skin-button-space" aria-hidden="true">{t("Classic arms")}</span></div>
+                    <div className="skin-library-item"><Control id="skin-add" className="skin-card skin-add" disabled={busy || editing || library.data.skins.length>=100} onClick={() => { returnFocus.current="skin-add"; setError(""); setDraft({id:crypto.randomUUID(),name:"",model:"default",png:""}); }}><span aria-hidden="true">＋</span>{t("Add skin")}</Control><span className="standard-button skin-button-space" aria-hidden="true">{t("Classic arms")}</span></div>
                     {all.map(skin => <div key={skin.id} className="skin-library-item"><Control id={`skin-card-${skin.id}`} className="skin-card" aria-pressed={selected.id===skin.id} disabled={busy || editing} onClick={() => setSelectedId(skin.id)}><span>{skin.name}</span><SkinPortrait skin={skin}/></Control><StandardButton id={`skin-model-${skin.id}`} disabled={busy || editing} aria-label={`${skin.name} · ${t("Skin model")}`} onClick={() => { const model = skin.model === "slim" ? "default" : "slim"; if (skin.id.startsWith("@")) setOfficialModel(model); else void library.commit(setSkinModel(library.data,skin.id,model)); }}>{t(skin.model === "slim" ? "Slim arms" : "Classic arms")}</StandardButton></div>)}
                 </div>
             </section>

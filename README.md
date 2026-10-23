@@ -2,17 +2,19 @@
 
 A third-party launcher for Minecraft Java Edition with an interface inspired by the official launcher.
 
-**[简体中文](README.zh-CN.md)** · Package name: `mclauncher-advanced`
+**[简体中文](README.zh-CN.md)** · **[繁體中文](README.zh-TW.md)** · Package name: `mclauncher-advanced`
 
 This independent desktop launcher supports keyboard, mouse and controller navigation, portable storage, isolated game instances and Modrinth content management. It is not an official Minecraft product and is not affiliated with, approved by or endorsed by Mojang or Microsoft.
 
 ## Release status
 
-The current version is **1.0.4**, available for Linux and Windows x86_64. Platform validation details are listed below.
+The current version is **1.0.5**, available for Linux and Windows x86_64. Platform validation details are listed below.
 
-See the [1.0.4 release notes](docs/release-notes/1.0.4.en-US.md).
+See the [1.0.5 release notes](docs/release-notes/1.0.5.en-US.md).
 
-Version 1.0.4 fixes installation failures for some mods supporting multiple loaders caused by dependencies exclusive to another loader, and improves dependency resolution errors in English and Simplified Chinese.
+Version 1.0.5 adds Traditional Chinese, standardizes Chinese resource labels, consolidates Linux desktop registration and fixes focus restoration on the skin page.
+
+“What’s new?” loads launcher release notes in the selected interface language. Missing translations display a notice without falling back to another language.
 
 ## Features
 
@@ -44,7 +46,7 @@ Version 1.0.2 introduced the MCLA icon for the launcher window, desktop integrat
 | Platform | Package | Validation status |
 | --- | --- | --- |
 | Linux x86_64, glibc | AppImage | Game installation and launch tested during development |
-| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.4 has been cross-compiled and packaged, but still requires testing on Windows |
+| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.5 has been cross-compiled and packaged, but still requires testing on Windows |
 | macOS ARM64 | Planned | No build available |
 
 Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not include or automatically install it. Wine/Proton is not a substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other processor architectures are not current targets.

@@ -129,3 +129,9 @@ mod tests {
         drop(Busy(backend.clone()));assert!(backend.ensure_idle().is_ok());
     }
 }
+
+#[tauri::command]
+pub async fn launcher_release_notes(version:String,language:String)->Result<Option<String>,String> {
+    tauri::async_runtime::spawn_blocking(move||self_update::release_notes(&version,&language))
+        .await.map_err(|e|e.to_string())?
+}

@@ -16,7 +16,14 @@ impl Backend {
         session.try_lock().map_err(|_| "The launcher is already running; use the existing window")?;
         let storage = crate::loader_management::recover(&bootstrap.join(".minecraft")).and_then(|_| Storage::open(&bootstrap))
             .and_then(|storage| {
-                launcher_platform::register(&bootstrap, &app.path().data_dir().map_err(|e|e.to_string())?, include_bytes!("../icons/icon.png"), include_bytes!("../icons/icon.ico"), &app.config().identifier)?;
+                launcher_platform::register(launcher_platform::Registration {
+                    root: &bootstrap,
+                    data: &app.path().data_dir().map_err(|e|e.to_string())?,
+                    icon: include_bytes!("../icons/icon.png"),
+                    windows_icon: include_bytes!("../icons/icon.ico"),
+                    desktop_id: &app.config().identifier,
+                    desktop_folder: app.path().desktop_dir().ok().as_deref(),
+                })?;
                 crate::local_instances::discover(&storage)?;
                 crate::java_selection::reconcile(&storage)?;
                 Ok(storage)

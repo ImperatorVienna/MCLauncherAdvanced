@@ -6,6 +6,7 @@ import { App } from "./App";
 import { t } from "./i18n";
 const state=vi.hoisted(()=>({value:{status:{phase:"available",version:"1.0.2",completed:0,total:100,error:null,announcement:{version:"1.0.2",body:"Release notes\n<script>untrusted</script>"}},error:"",pending:"",locked:false,action:vi.fn()}}));
 vi.mock("./state/launcherUpdate",()=>({LauncherUpdateProvider:({children}:{children:unknown})=>children,useLauncherUpdate:()=>state.value}));
+vi.mock("./state/releaseNotes",()=>({useReleaseNotes:()=>({body:state.value.status.announcement.body,loading:false,failed:false})}));
 test("update notice, about focus, task isolation and failure focus recovery",async()=>{
     Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});localStorage.clear();
     const host=document.createElement("div");document.body.append(host);const root=createRoot(host);

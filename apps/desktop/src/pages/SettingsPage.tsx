@@ -3,7 +3,7 @@ import { ControllerHints } from "../components/ControllerHints";
 import { Checkbox } from "../components/Checkbox";
 import { SelectMenu } from "../components/SelectMenu";
 import { StandardButton } from "../components/StandardButton";
-import { t, useLocale, setLocale, type Locale } from "../i18n";
+import { t, useLocale, setLocale, locales, localeLabel, type Locale } from "../i18n";
 import type { useSteamSession } from "../input/steamSession";
 import { contentSources } from "../state/contentSource";
 
@@ -28,7 +28,7 @@ export function SettingsPage({steam,preview,controllerDevices,controllerError,co
         <div><StandardButton id="launcher-view-logs" tone="yellow" onClick={onViewLogs}>{t("View launcher logs")}</StandardButton></div>
         <div className="settings-group">
             <span>{t("Language")}</span>
-            <SelectMenu id="launcher-language" compact showIcons={false} label={t("Language")} options={["en-US","zh-CN"]} value={language} labelForValue={value=>value==="zh-CN" ? t("Simplified Chinese") : t("English")} onChange={value=>setLocale(value as Locale)}/>
+            <SelectMenu id="launcher-language" compact showIcons={false} label={t("Language")} options={[...locales]} value={language} labelForValue={value=>localeLabel(value as Locale)} onChange={value=>setLocale(value as Locale)}/>
         </div>
         <div className="settings-group">
             <span>{t("Content download source")}</span>

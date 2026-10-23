@@ -341,7 +341,6 @@
   "Verifying Xbox and Minecraft account…": "Verifying Xbox and Minecraft account…",
   "Requesting a Microsoft sign-in code…": "Requesting a Microsoft sign-in code…",
   "Open sign-in page": "Open sign-in page",
-  "Microsoft skin uploads are not connected yet.": "Microsoft skin uploads are not connected yet.",
   "Language": "Language",
   "English": "English",
   "Simplified Chinese": "简体中文",
@@ -413,5 +412,13 @@
   "Too many skin updates; try again later": "Too many skin updates; try again later",
   "Skin upload failed; retry": "Skin upload failed; retry",
   "Skin update could not be confirmed; reload the account skin": "Skin update could not be confirmed; reload the account skin",
-  "Skin updated": "Skin updated"
+  "Skin updated": "Skin updated",
+  "Invalid desktop application ID": "Invalid desktop application ID",
+  "New desktop entry is not visible": "New desktop entry is not visible",
+  "Traditional Chinese": "繁體中文",
+  "Loading release notes…": "Loading release notes…",
+  "Could not load release notes for this language.": "Could not load release notes for this language.",
+  "No release notes are available in this language.": "No release notes are available in this language.",
+  "Unsupported release notes language": "Unsupported release notes language",
+  "Release notes exceed the size limit": "Release notes exceed the size limit"
 }

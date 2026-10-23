@@ -26,3 +26,35 @@ test("changing official arms previews locally and only Use skin uploads", async(
     expect(apply).toHaveBeenCalledWith({...skin,model:"default"});
     act(()=>root.unmount());host.remove();
 });
+test("Back restores the editor trigger and late saves cannot steal another page's focus", async()=>{
+    Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+    const frames:FrameRequestCallback[]=[];
+    vi.stubGlobal("requestAnimationFrame",(callback:FrameRequestCallback)=>{frames.push(callback);return frames.length;});
+    const skin:DisplaySkin={id:"12345678-1234-1234-1234-123456789abc",name:"Custom",model:"slim",png:"YWJj",url:"data:image/png;base64,YWJj"};
+    let finish!:(ok:boolean)=>void;
+    const commit=vi.fn(()=>new Promise<boolean>(resolve=>{finish=resolve;}));
+    const library:ReturnType<typeof useSkins>={data:{...emptySkins(),skins:[skin]},all:[skin],current:()=>skin,accountSkin:null,commit,apply:vi.fn(),applied:false,canApply:true,error:"",busy:false};
+    const host=document.createElement("div");document.body.append(host);const root=createRoot(host);
+    const manager=new FocusManager();
+    try {
+        await act(async()=>root.render(<Navigation.Provider value={manager}><SkinsPage library={library}/></Navigation.Provider>));
+        act(()=>(host.querySelector('#skin-edit') as HTMLButtonElement).click());
+        expect(manager.activeId()).toBe("skin-name");
+        act(()=>manager.dispatch("Back"));
+        act(()=>{frames.splice(0).forEach(cb=>cb(0));});
+        expect(manager.activeId()).toBe("skin-edit");
+        act(()=>(host.querySelector('#skin-delete') as HTMLButtonElement).click());
+        expect(manager.activeId()).toBe("skin-cancel");
+        act(()=>manager.dispatch("Back"));
+        act(()=>{frames.splice(0).forEach(cb=>cb(0));});
+        expect(manager.activeId()).toBe("skin-delete");
+        act(()=>(host.querySelector('#skin-edit') as HTMLButtonElement).click());
+        act(()=>(host.querySelector('#skin-save') as HTMLButtonElement).click());
+        act(()=>root.unmount());
+        const focus=vi.spyOn(manager,"focus");
+        await act(async()=>{finish(true);});
+        act(()=>{frames.splice(0).forEach(cb=>cb(0));});
+        expect(focus).not.toHaveBeenCalled();
+        expect(manager.cancelEditor).toBeUndefined();
+    } finally {host.remove();vi.unstubAllGlobals();}
+});

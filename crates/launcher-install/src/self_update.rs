@@ -56,6 +56,22 @@ pub fn check(current: &str, target: &str) -> Result<(bool, Option<Update>, Optio
     inspect(release,current,target)
 }
 
+/// Fetch one language from the immutable release tag, never the mixed GitHub body.
+fn notes_url(version: &str, language: &str) -> Result<String> {
+    let version = Version::parse(version).map_err(|_| "Invalid release version")?;
+    if !version.pre.is_empty() || !version.build.is_empty() { return Err("Invalid release version".into()); }
+    if !matches!(language, "en-US" | "zh-CN" | "zh-TW") { return Err("Unsupported release notes language".into()); }
+    Ok(format!("https://raw.githubusercontent.com/ImperatorVienna/MCLauncherAdvanced/v{version}/docs/release-notes/{version}.{language}.md"))
+}
+pub fn release_notes(version: &str, language: &str) -> Result<Option<String>> {
+    let response = download::client()?.get(notes_url(version, language)?).send().map_err(err)?;
+    if response.status() == reqwest::StatusCode::NOT_FOUND { return Ok(None); }
+    let mut bytes = Vec::new();
+    response.error_for_status().map_err(err)?.take(256_001).read_to_end(&mut bytes).map_err(err)?;
+    if bytes.len() > 256_000 { return Err("Release notes exceed the size limit".into()); }
+    String::from_utf8(bytes).map(Some).map_err(err)
+}
+
 fn inspect(release:Release,current:&str,target:&str)->Result<(bool,Option<Update>,Option<Announcement>)>{
     let version = Version::parse(release.tag_name.trim_start_matches('v')).map_err(|_| "Invalid release version")?;
     if release.draft || release.prerelease || !version.pre.is_empty() { return Ok((false,None,None)); }
@@ -66,6 +82,13 @@ fn inspect(release:Release,current:&str,target:&str)->Result<(bool,Option<Update
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn notes_urls_are_scoped_to_release_and_language() {
+        for language in ["en-US", "zh-CN", "zh-TW"] {
+            assert_eq!(notes_url("1.0.5",language).unwrap(),format!("https://raw.githubusercontent.com/ImperatorVienna/MCLauncherAdvanced/v1.0.5/docs/release-notes/1.0.5.{language}.md"));
+        }
+        for version in ["../main", "1.0.5-test", "1.0.5+build"] { assert!(notes_url(version,"en-US").is_err()); }
+        assert!(notes_url("1.0.5","../zh-CN").is_err());
+    }
     fn release(version: &str, target: &str, extension: &str) -> Release {
         let name = format!("mclauncher-advanced_{version}-{target}.{extension}");
         serde_json::from_value(serde_json::json!({"tag_name":format!("v{version}"),"draft":false,"prerelease":false,"assets":[{"name":name,"state":"uploaded","size":123,"digest":format!("sha256:{}","a".repeat(64)),"browser_download_url":format!("{PREFIX}v{version}/{name}")}]})).unwrap()
