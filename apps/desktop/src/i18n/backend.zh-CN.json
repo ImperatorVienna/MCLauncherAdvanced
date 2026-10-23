@@ -1,4 +1,5 @@
 {
+  "Microsoft Client ID is not configured; configure it and rebuild the launcher": "尚未配置 Microsoft Client ID，请配置后重新构建启动器",
   "The instance library changed; reload and retry": "配置已被更新，请重新加载后重试",
   "Instance name conflict: \"{0}\" already exists in versions; choose another name": "配置名冲突：versions 中已存在“{0}”，请使用其他配置名称",
   "Instance name conflict; choose another name": "配置名冲突，请使用其他配置名称",
@@ -299,5 +300,11 @@
   "Update helper failed; see {path}": "更新辅助进程失败，请查看 {path}。",
   "Invalid executable update path": "启动器更新路径无效。",
   "Invalid update backup path": "旧版程序保留路径无效。",
-  "The new launcher filename already exists; move that file before updating": "新版启动器文件名已存在，请先移走该文件再更新。"
+  "The new launcher filename already exists; move that file before updating": "新版启动器文件名已存在，请先移走该文件再更新。",
+  "Skin image preview is unavailable": "无法预览皮肤图片",
+  "Clipboard is unavailable": "剪贴板不可用，请打开日志文件后手动复制。",
+  "Skin upload failed; retry": "皮肤上传失败，请重试",
+  "Too many skin updates; try again later": "皮肤更新过于频繁，请稍后重试",
+  "Skin update could not be confirmed; reload the account skin": "无法确认皮肤更新结果，请重新加载账户皮肤",
+  "Invalid skin URL": "皮肤地址无效"
 }

@@ -1,6 +1,18 @@
 # Microsoft accounts
 
-The desktop launcher uses Microsoft device authorization (`consumers`, `XboxLive.signin offline_access`) with the registered public client ID `88ad9fa2-9ee4-4bc9-a8d6-be3ddedd70d7`. No client secret or embedded password form is used. The user opens Microsoft's verification page and completes consent in their browser. Registering an Entra application does not itself guarantee approval by Minecraft Services.
+The desktop launcher uses Microsoft device authorization (`consumers`, `XboxLive.signin offline_access`) with a build-time public client ID. No client secret or embedded password form is used. The user opens Microsoft's verification page and completes consent in their browser. Registering an Entra application does not itself guarantee approval by Minecraft Services.
+
+## Client ID configuration
+
+The single configuration point is `CLIENT_ID` in
+`apps/desktop/src-tauri/src/microsoft_auth.rs`. It currently contains the project owner’s registered Application (client) ID.
+Registration does not imply Minecraft API approval.
+After your application is approved, put its Entra Application (client) ID between
+the quotes and rebuild the launcher. Do not enter a client secret or tenant ID.
+Device authorization, token refresh and game launch arguments use the same value.
+An empty value rejects sign-in and authenticated launch locally, before network
+requests, including when cached credentials exist. No settings field or platform
+specific configuration is required. Previously built release files are unchanged.
 
 ## Boundaries
 

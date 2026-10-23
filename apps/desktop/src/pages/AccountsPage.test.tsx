@@ -39,10 +39,18 @@ test("verified account names are read-only and local creation is absent", async(
 test("device authorization focuses its controls and back cancels without navigating away", async()=>{
     const manager=new FocusManager(),host=document.createElement("div");document.body.append(host);const root=createRoot(host);
     const cancel=vi.fn().mockResolvedValue(undefined),open=vi.fn();
+    const writeText=vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText}});
     const login={status:{running:true,phase:"waiting",userCode:"ABCD-EFGH",verificationUri:"https://www.microsoft.com/link",expiresAt:1,error:null,completed:false},busy:true,error:"",start:vi.fn(),cancel,open};
     await act(async()=>root.render(<Navigation.Provider value={manager}><AccountsPage accounts={{data:{revision:0,selected:null},busy:true,error:"",commit:vi.fn(),refresh:vi.fn(),login}}/></Navigation.Provider>));
     expect(manager.activeId()).toBe("account-login-open");
     expect(host.textContent).toContain("ABCD-EFGH");
+    expect(host.querySelector("#account-login-copy")).not.toBeNull();
+    await act(async () => (host.querySelector("#account-login-copy") as HTMLButtonElement).click());
+    expect(writeText).toHaveBeenCalledWith("ABCD-EFGH");
+    writeText.mockRejectedValueOnce(new Error("denied"));
+    await act(async () => (host.querySelector("#account-login-copy") as HTMLButtonElement).click());
+    expect(host.querySelector('[role="alert"]')).not.toBeNull();
     act(()=>(host.querySelector("#account-login-open") as HTMLButtonElement).click());expect(open).toHaveBeenCalledOnce();
     await act(async()=>manager.dispatch("Back"));expect(cancel).toHaveBeenCalledOnce();
     act(()=>root.unmount());host.remove();

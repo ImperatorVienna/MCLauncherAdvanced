@@ -34,7 +34,25 @@ export function displaySkins(data: SkinLibrary): DisplaySkin[] {
         return {...s,model,url:model === s.model ? s.url : assets[`../assets/skins/${s.id.slice(8)}-alternate.png`]};
     })];
 }
-export function useSkins() {
+export function useSkins(selectedAccount: string | null = null, accountRevision = 0) {
+    const generation = useRef(0);
+    const uploadLock = useRef(false);
+    const [uploading, setUploading] = useState(false), [uploadError, setUploadError] = useState(""), [applied, setApplied] = useState(false);
+    const [official, setOfficial] = useState<{ account: string; skin: DisplaySkin | null; error: string } | null>(null);
+    useEffect(() => {
+        let live = true;
+        const request = ++generation.current;
+        setUploadError(""); setApplied(false);
+        setOfficial(null);
+        if (selectedAccount && isDesktop()) {
+            invokeNative<Skin | null>("load_account_skin", { selected: selectedAccount }).then(skin => {
+                if (live && request === generation.current) setOfficial({ account: selectedAccount, skin: skin ? {...skin, url: `data:image/png;base64,${skin.png}`, builtin: true} : null, error: "" });
+            }).catch(e => { if (live && request === generation.current) setOfficial({ account: selectedAccount, skin: null, error: localizeMessage(e) }); });
+        }
+        return () => { live = false; generation.current++; };
+    }, [selectedAccount, accountRevision]);
+    const accountSkin = official?.account === selectedAccount ? official.skin : null;
+    const accountSkinError = official?.account === selectedAccount ? official.error : "";
     const [data, setData] = useState(emptySkins);
     const [ready, setReady] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState("");
     const lock = useRef(false); const native = isDesktop(); const key = "launcher.local-skins.v1";
@@ -61,9 +79,24 @@ export function useSkins() {
         } catch (e) { setError(localizeMessage(e)); return false; }
         finally { lock.current = false; setBusy(false); }
     }
-    const all = displaySkins(data);
-    const current = (account: string | null) => all.find(s => s.id === (account ? data.assignments[account] : "")) ?? all.find(s => s.id === builtinSkins[0].id)!;
-    return { data, all, current, commit, error, busy: busy || !ready };
+    async function apply(skin: DisplaySkin) {
+        if (!selectedAccount || !native || uploadLock.current) return false;
+        uploadLock.current = true; setUploading(true); setUploadError(""); setApplied(false);
+        const request = ++generation.current;
+        try {
+            // Bundled skins use asset URLs; imported and official skins already contain PNG bytes.
+            const image = skin.png || await importSkin(new File([await (await fetch(skin.url)).blob()], "skin.png", {type:"image/png"}));
+            if (request !== generation.current) return false;
+            const saved = await invokeNative<Skin>("upload_account_skin", { selected: selectedAccount, model: skin.model, image });
+            if (request !== generation.current) return false;
+            setOfficial({account: selectedAccount, skin: {...saved, url:`data:image/png;base64,${saved.png}`, builtin:true}, error:""});
+            setApplied(true); return true;
+        } catch(e) { if (request === generation.current) setUploadError(localizeMessage(e)); return false; }
+        finally { uploadLock.current = false; setUploading(false); }
+    }
+    const all = [...(accountSkin ? [accountSkin] : []), ...displaySkins(data)];
+    const current = (account: string | null) => all.find(s => s.id === (account ? data.assignments[account] : "")) ?? accountSkin ?? all.find(s => s.id === builtinSkins[0].id)!;
+    return { data, all, current, accountSkin, commit, apply, applied, canApply: native && !!selectedAccount, error: uploadError || error || accountSkinError, busy: busy || !ready || uploading };
 }
 export async function importSkin(file: File): Promise<string> {
     if (file.size > 128 * 1024) throw Error(t("Skin PNG exceeds 128 KiB"));

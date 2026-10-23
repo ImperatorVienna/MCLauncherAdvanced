@@ -1,4 +1,5 @@
 {
+  "Microsoft Client ID is not configured; configure it and rebuild the launcher": "Microsoft Client ID is not configured; configure it and rebuild the launcher",
   "The instance library changed; reload and retry": "The instance library changed; reload and retry",
   "Instance name conflict: \"{0}\" already exists in versions; choose another name": "Instance name conflict: \"{0}\" already exists in versions; choose another name",
   "Instance name conflict; choose another name": "Instance name conflict; choose another name",
@@ -299,5 +300,11 @@
   "Update helper failed; see {path}": "Update helper failed; see {path}",
   "Invalid executable update path": "Invalid executable update path",
   "Invalid update backup path": "Invalid update backup path",
-  "The new launcher filename already exists; move that file before updating": "The new launcher filename already exists; move that file before updating"
+  "The new launcher filename already exists; move that file before updating": "The new launcher filename already exists; move that file before updating",
+  "Skin image preview is unavailable": "Skin image preview is unavailable",
+  "Clipboard is unavailable": "The clipboard is unavailable. Open the log file and copy its contents manually.",
+  "Skin upload failed; retry": "Skin upload failed; retry",
+  "Too many skin updates; try again later": "Too many skin updates; try again later",
+  "Skin update could not be confirmed; reload the account skin": "Skin update could not be confirmed; reload the account skin",
+  "Invalid skin URL": "Invalid skin URL"
 }

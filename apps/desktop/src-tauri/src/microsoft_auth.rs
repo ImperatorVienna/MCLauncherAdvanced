@@ -6,7 +6,15 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use std::{io::Read, sync::{Arc, Mutex}, time::{Duration, Instant, SystemTime, UNIX_EPOCH}};
 type Result<T> = std::result::Result<T, String>;
-pub const CLIENT_ID: &str = "88ad9fa2-9ee4-4bc9-a8d6-be3ddedd70d7";
+// Single configuration point: fill in your approved Entra Application (client) ID
+// and rebuild. Login, refresh and game arguments all use this value.
+pub const CLIENT_ID: &str = "fe72edc2-3a6f-4280-90e8-e2beb64ce7e1";
+fn require_client_id() -> Result<()> {
+    if CLIENT_ID.trim().is_empty() {
+        return Err("Microsoft Client ID is not configured; configure it and rebuild the launcher".into());
+    }
+    Ok(())
+}
 const AUTHORITY: &str = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
 const SCOPE: &str = "XboxLive.signin offline_access";
 const VERIFY: &str = "https://www.microsoft.com/link";
@@ -142,6 +150,7 @@ fn login(session:&MicrosoftLogin,id:u64,store:&AccountStore)->Result<()> {
     }
 }
 pub fn start_microsoft_login(session:&MicrosoftLogin,store:&AccountStore)->Result<()> {
+    require_client_id()?;
     let id={let mut s=session.0.lock().map_err(|_|"Sign-in state is unavailable")?;
         if s.status.running {return Err("Sign-in is already running".into())}
         s.generation+=1;s.status=LoginStatus {running:true,phase:"starting".into(),..Default::default()};s.generation};
@@ -163,11 +172,42 @@ pub fn verification_address(session:&MicrosoftLogin)->Result<String> {
 }
 pub struct Identity {pub name:String,pub uuid:String,pub access_token:String,pub xuid:String}
 pub fn identity(store:&AccountStore,selected:&str)->Result<Identity> {
+    require_client_id()?;
     let id=selected.strip_prefix('@').filter(|id|crate::accounts::valid_id(id)).ok_or("Sign in before launching the game")?;
     let _guard=store.1.lock().map_err(|_|"Account refresh is unavailable")?;
     let client=client()?;
     let c=refresh_credential(store,id,|refresh| checked(client.post(format!("{AUTHORITY}/token")).form(&[("client_id",CLIENT_ID),("scope",SCOPE),("grant_type","refresh_token"),("refresh_token",refresh)]),"Microsoft"),|access,refresh|exchange(&client,access,refresh))?;
     Ok(Identity{name:c.name,uuid:c.id,access_token:c.access_token,xuid:c.xuid})
+}
+// Fetch display metadata without exposing the game token to the renderer.
+pub fn skin_profile(store: &AccountStore, selected: &str) -> Result<Value> {
+    let identity = identity(store, selected)?;
+    let profile = checked(client()?.get("https://api.minecraftservices.com/minecraft/profile").bearer_auth(&identity.access_token), "Minecraft profile")?;
+    if profile["id"].as_str().map(str::to_lowercase).as_deref() != Some(identity.uuid.as_str()) {
+        return Err("Invalid Minecraft profile".into());
+    }
+    Ok(profile)
+}
+pub fn upload_skin(identity: &Identity, model: &str, bytes: Vec<u8>) -> Result<()> {
+    upload_skin_at(&client()?, "https://api.minecraftservices.com/minecraft/profile/skins", identity, model, bytes)
+}
+fn upload_skin_at(client: &Client, endpoint: &str, identity: &Identity, model: &str, bytes: Vec<u8>) -> Result<()> {
+    let variant = match model { "default" => "classic", "slim" => "slim", _ => return Err("Invalid skin model".into()) };
+    let file = reqwest::blocking::multipart::Part::bytes(bytes).file_name("skin.png").mime_str("image/png").map_err(|_| "Invalid skin PNG")?;
+    let form = reqwest::blocking::multipart::Form::new().text("variant", variant).part("file", file);
+    let (status, profile) = response(client.post(endpoint).bearer_auth(&identity.access_token).multipart(form))?;
+    match status {
+        200 => {},
+        401 | 403 => return Err("Sign-in expired or was revoked; sign in with Microsoft again".into()),
+        429 => return Err("Too many skin updates; try again later".into()),
+        _ => return Err("Skin upload failed; retry".into()),
+    }
+    let expected_variant = if model == "slim" { "SLIM" } else { "CLASSIC" };
+    if profile["id"].as_str().map(str::to_lowercase).as_deref() != Some(identity.uuid.as_str()) ||
+        !profile["skins"].as_array().is_some_and(|skins| skins.iter().any(|skin| skin["state"] == "ACTIVE" && skin["variant"] == expected_variant)) {
+        return Err("Skin update could not be confirmed; reload the account skin".into());
+    }
+    Ok(())
 }
 fn refresh_credential(store:&AccountStore,id:&str,request:impl FnOnce(&str)->Result<Value>,exchange:impl FnOnce(&str,String)->Result<Credential>)->Result<Credential> {
     let c=store.credential(id)?;
@@ -183,6 +223,10 @@ fn refresh_credential(store:&AccountStore,id:&str,request:impl FnOnce(&str)->Res
 }
 
 #[cfg(test)] mod tests {
+    #[test] fn missing_client_id_is_rejected() {
+        assert_eq!(super::require_client_id().is_err(), super::CLIENT_ID.trim().is_empty());
+    }
+
     use super::*;
     #[test] fn entitlement_shape_does_not_invent_subscription_policy() {
         assert!(validate_entitlements(&json!({"items":[]})).is_ok());
@@ -273,4 +317,45 @@ fn refresh_credential(store:&AccountStore,id:&str,request:impl FnOnce(&str)->Res
         server.join().unwrap();
     }
 
+}
+
+#[cfg(test)] mod skin_upload_tests {
+    use super::*;
+    #[test] fn uploads_multipart_and_checks_account_model_and_failure() {
+        use std::io::{BufRead, BufReader, Write};
+        for (model, status, id, variant, success) in [
+            ("default", 200, "a", "CLASSIC", true), ("slim", 200, "a", "SLIM", true),
+            ("slim", 200, "b", "SLIM", false), ("slim", 200, "a", "CLASSIC", false),
+            ("slim", 401, "a", "SLIM", false), ("slim", 429, "a", "SLIM", false),
+        ] {
+            let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+            let endpoint = format!("http://{}/minecraft/profile/skins", listener.local_addr().unwrap());
+            let server = std::thread::spawn(move || {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut headers = String::new();
+                loop { let mut line = String::new(); reader.read_line(&mut line).unwrap(); if line == "\r\n" { break; } headers.push_str(&line); }
+                let lower = headers.to_lowercase();
+                assert!(headers.starts_with("POST /minecraft/profile/skins "));
+                assert!(lower.contains("authorization: bearer private-token"));
+                assert!(lower.contains("multipart/form-data; boundary="));
+                let length: usize = lower.lines().find_map(|line| line.strip_prefix("content-length:")).unwrap().trim().parse().unwrap();
+                let mut bytes = vec![0; length]; reader.read_exact(&mut bytes).unwrap();
+                let body = String::from_utf8_lossy(&bytes);
+                assert!(body.contains("name=\"variant\""));
+                assert!(body.contains(if model == "slim" { "\r\nslim\r\n" } else { "\r\nclassic\r\n" }));
+                assert!(body.contains("filename=\"skin.png\""));
+                assert!(body.contains("Content-Type: image/png"));
+                assert!(bytes.windows(8).any(|w| w == b"\x89PNG\r\n\x1a\n"));
+                let response = json!({"id":id.repeat(32),"skins":[{"state":"ACTIVE","variant":variant}]}).to_string();
+                write!(stream,"HTTP/1.1 {status} Test\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",response.len(),response).unwrap();
+            });
+            let client = Client::builder().no_proxy().timeout(Duration::from_secs(5)).build().unwrap();
+            let identity = Identity { name:"Alex".into(), uuid:"a".repeat(32), access_token:"private-token".into(), xuid:String::new() };
+            let result = upload_skin_at(&client, &endpoint, &identity, model, include_bytes!("../../src/assets/skins/steve.png").to_vec());
+            server.join().unwrap(); assert_eq!(result.is_ok(), success);
+            if let Err(error) = result { assert!(!error.contains("private-token")); }
+        }
+    }
 }

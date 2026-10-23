@@ -1,65 +1,65 @@
 # MC Launcher Advanced
 
-A third-party powered launcher for Minecraft Java Edition with an interface similar to the official.
+A third-party launcher for Minecraft Java Edition with an interface inspired by the official launcher.
 
 **[简体中文](README.zh-CN.md)** · Package name: `mclauncher-advanced`
 
-An independent desktop launcher with keyboard, mouse and controller navigation, portable storage, isolated game instances and Modrinth content management. It is not an official Minecraft product and is not affiliated with or endorsed by Mojang or Microsoft.
+This independent desktop launcher supports keyboard, mouse and controller navigation, portable storage, isolated game instances and Modrinth content management. It is not an official Minecraft product and is not affiliated with, approved by or endorsed by Mojang or Microsoft.
 
 ## Release status
 
-The current version is **1.0.2**, with Linux and Windows x86_64 packages. See the platform validation scope below.
+The current version is **1.0.3**, available for Linux and Windows x86_64. Platform validation details are listed below.
 
-See the [1.0.2 release notes](docs/release-notes/1.0.2.en-US.md) for this update. Game sessions require Microsoft sign-in; publishing the launcher does not imply completed Minecraft API access approval.
+See the [1.0.3 release notes](docs/release-notes/1.0.3.en-US.md).
 
-Microsoft device-code sign-in and the Xbox/Minecraft authentication flow are implemented. **This application has not obtained Minecraft API access approval.** Microsoft sign-in currently cannot complete the required Minecraft authentication flow. Successful Microsoft sign-in alone does not establish that Minecraft authentication or game launch has succeeded.
+Version 1.0.3 fixes Minecraft account sign-in, skin loading and skin updates. It adds a Copy authorization code button, account skin avatars and previews, skin uploads, and Classic/Slim arm selection. New interface text is available in English and Simplified Chinese.
 
 ## Features
 
-- Install, repair and launch Minecraft: Java Edition with an explicitly selected Java runtime.
-- Create isolated instances, discover local version folders and manage per-instance memory, display and Java settings.
-- Install Fabric, Quilt, Forge and NeoForge; change versions within an instance's existing loader family.
-- Download Java from Eclipse Adoptium/Temurin, verify downloads and rescan installed runtimes. Downloads and runtime selection remain explicit user actions.
-- Browse, search, install and update mods, resource packs and shader packs from Modrinth using the selected instance's game version and loader. The instance selector is shared with instance management.
-- Scan local content, disable/enable mods, delete files and check for updates. Resource packs and shader packs are activated and configured in game.
-- Navigate with mouse, keyboard or a physical controller. Optional Steam adaptation enables launcher fullscreen and requests the Steam keyboard when launched through Steam.
-- Settings provides Xbox, PlayStation, Nintendo Switch Pro and generic controller diagrams with operation guides. Select a device from the dropdown; valid controller input silently selects the active device without changing the page or focus.
-- English and Simplified Chinese interfaces; English is the initial default.
-- Per-instance game/installer logs and launcher logs accessible through the interface.
-- Five official Java Edition news items on the home page, plus game release notes matched to the selected instance’s Minecraft version.
-- Settings → About shows the version, update checks, maintainer homepage and project homepage, with separate dialogs for the open-source license and third-party notices.
+- Install, repair and launch Minecraft: Java Edition using a Java runtime explicitly selected by the player.
+- Create isolated instances, recognize local version folders, and manage memory, display mode and Java separately for each instance.
+- Install Fabric, Quilt, Forge and NeoForge, and change loader versions within an instance's existing loader family.
+- Download Java from Eclipse Adoptium/Temurin, verify downloaded files and rescan local runtimes. The player initiates downloads and selects the runtime.
+- Browse, search, install and update mods, resource packs and shader packs on Modrinth, filtered by the current instance's game version and loader. Browsing and instance management share the same instance selector.
+- Scan local content, enable or disable mods, delete files and check for updates. Resource packs and shaders are enabled and configured in the game.
+- Navigate with a mouse, keyboard or physical controller. Optional Steam integration enables launcher fullscreen when started through Steam and requests the Steam virtual keyboard.
+- View Xbox, PlayStation, Nintendo Switch Pro and generic controller diagrams and instructions in Settings. Choose a device from the dropdown; valid controller input automatically selects the active device without changing the page or focus.
+- Use English or Simplified Chinese, with English selected on first launch.
+- View each instance's game and installation logs, as well as launcher logs, within the interface.
+- Read five official Java Edition news items on the home page and load game release notes for the current instance's Minecraft version.
+- View the version, check for updates and visit the maintainer and project pages in Settings → About. Read open-source licenses and third-party notices in separate dialogs.
 
-The skin library supports local PNG import and preview. Uploading/applying skins to a Microsoft account is **not connected yet**. The launcher checks GitHub for a stable release at startup. Settings → About also provides manual checking, verified downloading, and automatic restart to install the update. The new executable uses the release asset filename in the same directory; the previous binary is retained with a `.previous` suffix. Successful startup removes the update staging directory. See the [release contract and validation limits](docs/launcher-updates.md).
+The skin library supports local PNG imports, account skin previews, and uploading and applying skins. Choose Classic or Slim arms, then click Use skin to apply the change to your account. The launcher automatically checks GitHub for stable updates at startup. Settings → About also lets you check manually, download and verify an update, and restart automatically to install it. The new version keeps the release asset's filename in the original directory; the previous version is retained with a `.previous` suffix. Update cache files are removed after the new version starts successfully. See the [release contract and validation scope](docs/launcher-updates.md).
 
 ## Official news and game release notes
 
-The home page loads five Java Edition news items from Mojang’s public launcher feed. Selecting a card opens the corresponding official Minecraft article in the browser.
+The home page loads five Java Edition news items from Mojang's public launcher feeds. Clicking a card opens the corresponding official Minecraft article in the browser.
 
-The game’s “Release notes” tab shows the official article for the selected instance’s Minecraft version. It is separate from the launcher release announcements under “What’s new?” in the sidebar. Articles are matched to the exact game version; another version’s notes are never substituted. Missing articles or failed requests produce a message. Official news and game release notes use English source content regardless of the interface language; buttons and source labels follow the interface language. Unavailable news or articles do not block game launch.
+The game's Release notes page shows the official article for the current instance's Minecraft version. It is separate from launcher announcements under What's new? in the sidebar. Articles must match the exact game version; notes for a different version are never substituted. A message appears when no matching article exists or a network request fails. Official news and game release notes retain their original English text regardless of the interface language; buttons and source labels follow the selected language. Unavailable news or articles do not prevent the game from launching.
 
-Version 1.0.2 introduces the MCLA icon across the launcher window, desktop integration and browser preview, fixes Wayland application identity matching, and refines bundled fonts, article layout and English interface wording. Asset notices and original license documents are displayed in English.
+Version 1.0.2 introduced the MCLA icon for the launcher window, desktop integration and browser preview, fixed Wayland application identity matching, and improved bundled fonts, article layout and English interface text. Asset notices and original license texts are displayed in English.
 
 ## Platforms and first launch
 
-| Platform | Package | Validation |
+| Platform | Package | Validation status |
 | --- | --- | --- |
 | Linux x86_64, glibc | AppImage | Game installation and launch tested during development |
-| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.2 has been cross-compiled and packaged, and still requires real Windows acceptance testing |
+| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.3 has been cross-compiled and packaged, but still requires testing on Windows |
 | macOS ARM64 | Planned | No build available |
 
-Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not bundle or automatically install it. Wine/Proton is not a supported substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other CPU architectures are not current targets.
+Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not include or automatically install it. Wine/Proton is not a substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other processor architectures are not current targets.
 
-1. Put the executable in a writable folder. Avoid a system-protected installation directory.
-2. On Linux, make the AppImage executable and run it. The host must support running AppImages.
-3. On Windows, install WebView2 Runtime if missing, then run the EXE. First launch creates `launch.bat` beside the EXE and a desktop shortcut; no Start menu entry is created.
-4. Choose an instance and Java. Forge/NeoForge installation requires a valid Java selection. Other installation flows allow an explicit “No Java selected”; launching still requires Java.
-5. Sign in and launch. Missing managed game files are completed through the installation/repair flow.
+1. Place the executable in a writable folder, avoiding system-protected installation directories.
+2. On Linux, make the AppImage executable and run it. The system must support running AppImages.
+3. On Windows, install WebView2 Runtime if it is missing, then run the EXE. First launch creates `launch.bat` beside the executable and a desktop shortcut; it does not create a Start menu entry.
+4. Select an instance and Java runtime. Forge/NeoForge installation requires a valid Java selection. Other installation workflows allow an explicit No Java selected choice, but launching the game still requires Java.
+5. Sign in and launch. Use installation or repair to restore missing managed game files.
 
-For Steam, add the generated launcher entry/script as a non-Steam game. Windows shortcuts use `launch.bat`; the script discovers the launcher even if the EXE is renamed. After moving the directory, run the executable once to refresh the desktop entry and re-add it to Steam.
+For Steam, add the generated launcher entry or script as a non-Steam game. Windows shortcuts point to `launch.bat`, which can still locate the executable after it is renamed. After moving the entire folder, run the executable directly once to refresh the desktop entry, then add it to Steam again.
 
-## Portable files
+## Portable storage
 
-Storage is based on the launcher's executable directory, not the shell's working directory:
+Storage is based on the directory containing the launcher executable, not the working directory used to run the command:
 
 ```text
 <launcher folder>/
@@ -82,38 +82,38 @@ Storage is based on the launcher's executable directory, not the shell's working
       logs/
 ```
 
-Folders are created as needed. Saves, mods, packs and game settings are isolated per instance; libraries/assets are shared. The launcher does not move data from another launcher or inherit mods/packs from its shared game directory. Detection of local version folders does not guarantee compatibility with every third-party launcher layout.
+Folders are created as needed. Saves, mods, resource packs, shaders and game settings are isolated per instance; libraries and assets are shared. The launcher does not migrate data from other launchers or inherit mods and resource packs from their shared game directories. Local version detection does not guarantee compatibility with every third-party launcher's folder layout.
 
-Managed Java is stored relative to the portable folder. System Java may need to be reselected on another machine. Rescanning checks the current machine's runtimes.
+Managed Java paths are stored relative to the launcher directory. System Java may need to be selected again on a different computer; rescanning checks the current computer's runtimes.
 
-`accounts.json` contains authentication credentials protected with OS file permissions. It is not an encrypted export. **Do not upload it, include it in bug reports, or share it when copying the launcher to another person.**
+`accounts.json` contains authentication credentials protected by operating-system file permissions. It is not an encrypted export. **Do not upload it, attach it to issue reports or share it when copying the launcher to someone else.**
 
-## Content updates
+## Content update rules
 
-- Compatibility filters follow the selected instance; unsupported game versions may require manual content installation.
-- File hashes identify content where Modrinth recognizes it. Unrecognized files remain manageable by filename but cannot be automatically matched to an update.
-- Updates use the new upstream filename for mods, resource packs and shader packs. Re-enable updated packs and adjust their settings in game if necessary; the launcher does not rewrite game pack-selection files.
-- Missing required dependencies are downloaded. Existing recognized dependencies are retained; updating a target does not establish full compatibility of every installed mod.
-- File deletion is permanent; it does not create a backup.
-- A controller mod such as Controlify is needed for in-game controller support. A compatible shader mod is needed to use shader packs. Launcher navigation does not add either capability to the game itself.
+- Compatibility filters follow the current instance. Content for unsupported game versions may need to be installed manually.
+- File hashes identify content recognized by Modrinth. Unrecognized files remain manageable by filename but cannot be matched automatically to updates.
+- Mods, resource packs and shaders use the new upstream filenames after an update. Re-enable packs and adjust settings in the game if necessary; the launcher does not change the game's selected resource packs.
+- Missing required dependencies are downloaded, and recognized existing dependencies are retained. Updating a file does not establish full compatibility among all installed mods.
+- File deletion is permanent and does not create backups.
+- In-game controller support requires a controller mod such as Controlify, and shaders require a compatible shader mod. Launcher navigation does not automatically add these capabilities to the game.
 
 ## Development
 
-The project uses Tauri 2/Rust and React/TypeScript/Vite. Install a compatible Rust toolchain, Node.js 22.12+ and the pnpm version pinned in `package.json`, plus the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/).
+The project uses Tauri 2/Rust and React/TypeScript/Vite. Install a compatible Rust toolchain, Node.js 22.12+, the pnpm version specified in `package.json`, and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 
 ```sh
 pnpm install
-pnpm dev                       # Browser preview, http://127.0.0.1:1420
+pnpm dev                       # Browser preview: http://127.0.0.1:1420
 pnpm test                      # Frontend regression tests
-pnpm build                     # Type check and frontend build
+pnpm build                     # Type checking and frontend build
 pnpm tauri dev                 # Native desktop development
 pnpm tauri build --bundles appimage  # Linux AppImage
 python3 scripts/check-source-language.py
 ```
 
-Browser preview has separate local data and does not perform native game installation or launch. F8 controller simulation has been removed; controller navigation uses the native input adapter.
+Browser previews use separate local data and do not perform native game installation or launch. F8 controller simulation has been removed; controller navigation uses native input adapters.
 
-Architecture boundaries are mandatory: frontend owns presentation/focus/navigation; core owns portable models and persistence; domain services own game/content workflows; platform adapters own OS integration. See [platform boundaries](docs/platform-boundary.md), [storage](docs/storage-and-updates.md), [installation](docs/installation.md), and [form spacing](docs/ui-reference/form-spacing.md).
+Architecture boundaries are mandatory: the frontend owns presentation, focus and navigation; core owns portable models and persistence; domain services own game and content workflows; platform adapters own operating-system integration. See [platform boundaries](docs/platform-boundary.md), [storage rules](docs/storage-and-updates.md), [installation](docs/installation.md) and [form spacing](docs/ui-reference/form-spacing.md).
 
 ## Privacy and local data
 
@@ -121,24 +121,22 @@ Architecture boundaries are mandatory: frontend owns presentation/focus/navigati
 
 ## Maintainer and contact
 
-MC Launcher Advanced is maintained and published by [ImperatorVienna](https://github.com/ImperatorVienna) in an individual capacity. The individual maintainer is responsible for this project; it is not published on behalf of a company or organization.
+MC Launcher Advanced is maintained and published by [ImperatorVienna](https://github.com/ImperatorVienna) as an individual. The maintainer is responsible for the project and does not represent a company or organization.
 
-Contact: [imperator.vienna@outlook.com](mailto:imperator.vienna@outlook.com).
+Email: [imperator.vienna@outlook.com](mailto:imperator.vienna@outlook.com).
 
-## Reports and credits
+## Issue reports and acknowledgements
 
-Report the edition, OS/architecture, game and loader versions, reproduction steps and relevant redacted logs. Do not include access/refresh tokens, device codes or account storage.
+Include the version or branch, operating system and architecture, game and loader versions, reproduction steps and redacted logs when reporting an issue. Do not attach access tokens, refresh tokens, device sign-in codes or account storage files.
 
-Dependencies and bundled assets have their own notices and licenses; see `apps/desktop/src-tauri/licenses/`, the bundled font's OFL notice and [asset provenance](docs/ui-reference/README.md). This README does not grant redistribution rights to third-party artwork or Minecraft assets. Minecraft and related names belong to their respective owners.
+Dependencies and bundled assets have their own notices and licenses. See `apps/desktop/src-tauri/licenses/`, the bundled font's OFL notice and [asset provenance](docs/ui-reference/README.md). This README does not grant redistribution rights to third-party artwork or Minecraft assets. Minecraft and related names belong to their respective owners.
 
 ## License
 
-Project-owned code is licensed under [GNU GPL 3.0](LICENSE)
-(`GPL-3.0-only`). Third-party libraries, fonts and artwork retain their own
-licenses and ownership; this license does not relicense Minecraft assets.
+Project-owned code is licensed under [GNU GPL 3.0](LICENSE) (`GPL-3.0-only`). Third-party libraries, fonts and artwork retain their own licenses and rights; this license does not relicense Minecraft assets.
 
 ## Interface design and asset notices
 
-The interface draws on the visual style of the official Minecraft launcher, is independently implemented, and is optimized for keyboard, mouse and controller use. The project does not use official launcher program code obtained through reverse engineering.
+The interface references the visual style of the official Minecraft launcher. It is independently implemented and optimized for keyboard, mouse and controller use. The project does not use official launcher program code obtained through reverse engineering.
 
-Original code is licensed under GPL-3.0-only. Referenced Minecraft marks, textures, skins, backgrounds and official editorial content are excluded from that grant. The MCLA icon's original lettering and geometry are distinguished from its referenced grass-block texture. Provenance is not permission; unconfirmed redistribution permissions are recorded explicitly. See [Asset, design and third-party rights notices](ASSET-NOTICES.md).
+Original code is released under GPL-3.0-only. Referenced Minecraft logos, textures, skins, backgrounds and official news content are excluded from that license grant. Rights to the MCLA icon's original lettering and geometry are distinguished from those of the referenced grass-block texture. Provenance does not constitute permission; unconfirmed redistribution rights are documented explicitly. See [Asset, design and third-party rights notices](ASSET-NOTICES.md).

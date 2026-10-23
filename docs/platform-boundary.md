@@ -164,3 +164,19 @@ This toolkit dependency stays out of core and domain services. Other hosts repor
 no native clipboard capability and retain the existing WebView clipboard path.
 The frontend owns translated failure messages; no clipboard text is logged or
 sent over the network. Actual compositor transfer remains a desktop acceptance check.
+
+## Official account skin previews
+
+The application authentication service reads the authenticated Minecraft profile.
+The skins IPC adapter downloads an allowlisted, bounded texture on a blocking worker
+and validates its PNG before sending image data to the frontend. Tokens remain native;
+texture requests contain no credentials. Frontend state owns account-switch race
+protection, preview selection and rendering. Core and platform gain no dependencies
+or account/skin policy.
+
+Official skin updates use the same application boundary: skins IPC validates image
+size, PNG dimensions and model; the authentication service sends the multipart
+upload using native credentials and validates the returned identity/model. The
+frontend owns model preview, explicit apply, progress and feedback. The generic
+frontend clipboard helper is shared by log copying and authorization-code copying;
+the existing isolated host clipboard adapter remains unchanged.

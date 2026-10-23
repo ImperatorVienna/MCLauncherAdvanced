@@ -407,5 +407,11 @@
   "Developed, maintained and published by ImperatorVienna in an individual capacity.": "Developed, maintained and published by ImperatorVienna in an individual capacity. The individual maintainer is responsible for this project.",
   "Contact: imperator.vienna@outlook.com": "Contact: imperator.vienna@outlook.com",
   "Maintainer homepage": "Maintainer homepage",
-  "Privacy notice": "Privacy notice"
+  "Privacy notice": "Privacy notice",
+  "Copy authorization code": "Copy authorization code",
+  "Choose an arm model, then use the skin to update your Minecraft account.": "Choose an arm model, then use the skin to update your Minecraft account.",
+  "Too many skin updates; try again later": "Too many skin updates; try again later",
+  "Skin upload failed; retry": "Skin upload failed; retry",
+  "Skin update could not be confirmed; reload the account skin": "Skin update could not be confirmed; reload the account skin",
+  "Skin updated": "Skin updated"
 }

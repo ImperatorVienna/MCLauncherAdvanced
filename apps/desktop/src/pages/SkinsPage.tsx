@@ -10,8 +10,10 @@ import { SkinPortrait } from "../components/SkinPortrait";
 export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> }) {
     const manager = useContext(Navigation);
     const current = library.current(null);
-    const [selectedId,setSelectedId] = useState(current.id);
-    const selected = library.all.find(s => s.id === selectedId) ?? current;
+    const [selectedId,setSelectedId] = useState<string | null>(null);
+    const [officialModel, setOfficialModel] = useState<SkinModel | null>(null);
+    const all = library.all.map(s => s.id.startsWith("@") && officialModel ? {...s, model: officialModel} : s);
+    const selected = all.find(s => s.id === (selectedId ?? current.id)) ?? current;
     const [draft,setDraft] = useState<Skin | null>(null), [deleting,setDeleting] = useState(false), [reading,setReading] = useState(false), [error,setError] = useState("");
     const file = useRef<HTMLInputElement>(null), importing = useRef(false), alive = useRef(true);
     const busy = library.busy || reading;
@@ -54,8 +56,9 @@ export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> })
                 <h2>{t("Skin preview")}</h2>
                 <SkinPreview skin={shown}/>
                 <p>{shown.name}</p>
+                <p className="skin-notice">{t("Choose an arm model, then use the skin to update your Minecraft account.")}</p>
                 {!editing && <div className="skin-actions">
-                    <StandardButton id="skin-use" tone="green" disabled title={t("Microsoft skin uploads are not connected yet.")}>{t("Use skin")}</StandardButton>
+                    <StandardButton id="skin-use" tone="green" disabled={busy || !library.canApply} onClick={() => { void library.apply(selected).then(ok => { if (ok && alive.current) setOfficialModel(null); }); }}>{t("Use skin")}</StandardButton>
                     <StandardButton id="skin-edit" disabled={busy || selected.builtin} onClick={() => { setError(""); setDraft({id:selected.id,name:selected.name,model:selected.model,png:selected.png}); }}>{t("Edit")}</StandardButton>
                     <StandardButton id="skin-delete" tone="red" disabled={busy || selected.builtin} onClick={() => setDeleting(true)}>{t("Delete")}</StandardButton>
                 </div>}
@@ -64,7 +67,7 @@ export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> })
                 <h2>{t("Skin library")}</h2>
                 <div className="skin-grid">
                     <div className="skin-library-item"><Control id="skin-add" className="skin-card skin-add" disabled={busy || editing || library.data.skins.length>=100} onClick={() => { setError(""); setDraft({id:crypto.randomUUID(),name:"",model:"default",png:""}); }}><span aria-hidden="true">＋</span>{t("Add skin")}</Control><span className="standard-button skin-button-space" aria-hidden="true">{t("Classic arms")}</span></div>
-                    {library.all.map(skin => <div key={skin.id} className="skin-library-item"><Control id={`skin-card-${skin.id}`} className="skin-card" aria-pressed={selected.id===skin.id} disabled={busy || editing} onClick={() => setSelectedId(skin.id)}><span>{skin.name}</span><SkinPortrait skin={skin}/></Control><StandardButton id={`skin-model-${skin.id}`} disabled={busy || editing} aria-label={`${skin.name} · ${t("Skin model")}`} onClick={() => { void library.commit(setSkinModel(library.data,skin.id,skin.model === "slim" ? "default" : "slim")); }}>{t(skin.model === "slim" ? "Slim arms" : "Classic arms")}</StandardButton></div>)}
+                    {all.map(skin => <div key={skin.id} className="skin-library-item"><Control id={`skin-card-${skin.id}`} className="skin-card" aria-pressed={selected.id===skin.id} disabled={busy || editing} onClick={() => setSelectedId(skin.id)}><span>{skin.name}</span><SkinPortrait skin={skin}/></Control><StandardButton id={`skin-model-${skin.id}`} disabled={busy || editing} aria-label={`${skin.name} · ${t("Skin model")}`} onClick={() => { const model = skin.model === "slim" ? "default" : "slim"; if (skin.id.startsWith("@")) setOfficialModel(model); else void library.commit(setSkinModel(library.data,skin.id,model)); }}>{t(skin.model === "slim" ? "Slim arms" : "Classic arms")}</StandardButton></div>)}
                 </div>
             </section>
         </div>
@@ -82,6 +85,7 @@ export function SkinsPage({ library }: { library: ReturnType<typeof useSkins> })
             </div>
         </div>}
         <input ref={file} type="file" accept="image/png,.png" hidden onChange={event => void readFile(event.currentTarget)}/>
+        {library.applied && <p role="status">{t("Skin updated")}</p>}
         {(error || library.error) && <p className="config-error" role="alert">{error || library.error}</p>}
     </section>;
 }

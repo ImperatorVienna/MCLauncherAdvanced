@@ -1,13 +1,23 @@
-import { useContext, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useContext, useLayoutEffect, useRef, useState } from "react";
 import { useAccounts } from "../state/accounts";
 import { SelectMenu } from "../components/SelectMenu";
 import { StandardButton } from "../components/StandardButton";
 import { Navigation } from "../components/Control";
 import { isDesktop } from "../platform/desktop";
-import { t } from "../i18n";
+import { copyText } from "../platform/clipboard";
+import { localizeMessage, t } from "../i18n";
 export function AccountsPage({ accounts }: { accounts: ReturnType<typeof useAccounts> }) {
     const [deleting, setDeleting] = useState(false);
     const manager = useContext(Navigation);
+    const [copied, setCopied] = useState(false), [copyError, setCopyError] = useState("");
+    const copyGeneration = useRef(0);
+    useEffect(() => { copyGeneration.current++; setCopied(false); setCopyError(""); return () => { copyGeneration.current++; }; }, [accounts.login.status.userCode, accounts.login.status.running]);
+    async function copyCode() {
+        const code = accounts.login.status.userCode, generation = copyGeneration.current;
+        if (!code) return;
+        try { await copyText(code); if (generation === copyGeneration.current) { setCopied(true); setCopyError(""); } }
+        catch (e) { if (generation === copyGeneration.current) { setCopied(false); setCopyError(localizeMessage(e)); } }
+    }
     const { data, busy, error, commit, login } = accounts;
     const options=(data.microsoft ?? []).map(a=>`@${a.id}`);
     const labelForValue=(value:string) => data.microsoft?.find(a=>`@${a.id}`===value)?.name ?? t("No accounts yet");
@@ -54,9 +64,11 @@ export function AccountsPage({ accounts }: { accounts: ReturnType<typeof useAcco
             {login.status.userCode && <><p className="sign-in-code">{login.status.userCode}</p><p>{login.status.verificationUri}</p></>}
             <div className="config-actions" data-navigation-actions>
                 {login.status.userCode && <StandardButton id="account-login-open" tone="green" onClick={()=>void login.open()}>{t("Open sign-in page")}</StandardButton>}
+                {login.status.userCode && <StandardButton id="account-login-copy" onClick={() => void copyCode()}>{t(copied ? "Copied" : "Copy authorization code")}</StandardButton>}
                 <StandardButton id="account-login-cancel" onClick={()=>void login.cancel().then(()=>requestAnimationFrame(()=>manager.focus("account-login")))}>{t("Cancel")}</StandardButton>
             </div>
         </div>}
+        {copyError && <p className="config-error" role="alert">{copyError}</p>}
         {login.error && <p className="config-error" role="alert">{login.error}</p>}
         {deleting && <div className="account-editor">
             <p>{t("Delete this account? Game instances and saves will not be deleted.")}</p>

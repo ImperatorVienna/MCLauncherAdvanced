@@ -1,12 +1,8 @@
-# Local skins
+# Skins
 
-The account skin page is a local library, independent of game instances.
-Offline accounts are for launch testing and do not support custom skins.
-No Java agent or local authentication/skin server is installed or launched.
-When an offline account is selected, the skin page displays only an unsupported-account message; the library and its controls are hidden. The skin library implementation is retained for future Microsoft accounts. Applying
-a skin is disabled until Microsoft authentication and official upload are
-implemented. Historical local account bindings are ignored by the UI.
-The sidebar uses a neutral avatar for offline accounts.
+Signed-in Microsoft accounts load their active skin from the authenticated Minecraft profile. The native application refreshes credentials when needed, downloads only HTTPS textures from textures.minecraft.net without credentials or redirects, and validates a bounded static PNG before returning image data. The frontend displays the skin in the sidebar and as an account entry in the skin library, preserving classic/slim arms. Switching accounts discards stale responses; preview failures do not block login or game launch. Profiles without an active texture retain the placeholder avatar and local preview. Users can select classic/slim arms locally, then explicitly click Use skin to upload the selected PNG and model to the authenticated account. Builtin, imported and current account skins use the same upload path. The native service validates the PNG and model, refreshes credentials as needed, sends multipart data to the fixed official endpoint, and verifies the returned account and active model before reporting success. Failed uploads retain the last confirmed account preview; concurrent clicks and stale account responses are ignored. The account entry cannot be deleted or edited as a local library record.
+
+The local library is independent of game instances. No Java agent or local authentication/skin server is installed or launched. Historical local account bindings are ignored by the UI.
 
 The desktop stores a revisioned, atomically written library at
 ~/.minecraft/launcher-skins.json. Browser previews use separate localStorage.
@@ -35,9 +31,3 @@ Per-card model choices are saved immediately; builtin choices use builtinModels
 and switch to the corresponding official texture, while custom choices update model.
 These assets are separate from the MIT-licensed renderer. Renderer, utility,
 and Three.js licenses are included in the application resources.
-
-Browser previews expose a separate "Microsoft account (test)" selection at the
-top of the account dropdown. It unlocks the skin page for UI testing only.
-It is session-only, never written to accounts.json, and not offered in Tauri.
-Editing/deleting that test entry is disabled; selecting an offline account
-restores the unsupported-skins message. Official skin upload remains disabled.

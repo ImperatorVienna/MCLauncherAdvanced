@@ -8,11 +8,11 @@
 
 ## 发布状态
 
-当前版本为 **1.0.2**，提供 Linux 与 Windows x86_64 发行包。各平台验证范围见下文。
+当前版本为 **1.0.3**，提供 Linux 与 Windows x86_64 发行包。各平台验证范围见下文。
 
-本次变更见 [1.0.2 更新公告](docs/release-notes/1.0.2.zh-CN.md)。启动游戏需要 Microsoft 登录；启动器发布不代表 Minecraft API 访问审核已完成。
+本次变更见 [1.0.3 更新公告](docs/release-notes/1.0.3.zh-CN.md)。
 
-Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本应用尚未获得 Minecraft API 访问批准。** 当前 Microsoft 登录无法完成所需的 Minecraft 认证流程。Microsoft 登录成功并不等于 Minecraft 认证或游戏启动成功。
+1.0.3 修复正版账户登录和皮肤读取、修改问题，新增“复制授权码”按钮、正版皮肤头像与预览，以及皮肤上传和经典／纤细手臂切换，并补齐新增文案的英文与简体中文版本。
 
 ## 功能
 
@@ -29,7 +29,7 @@ Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本�
 - 首页显示五条 Java 版官方新闻；游戏更新说明按当前配置的 Minecraft 版本加载。
 - 在“设置 → 关于”查看版本、检查更新、访问维护者主页和项目主页，并通过独立弹窗阅读开源许可证和第三方声明。
 
-皮肤库支持导入本地 PNG 和预览，**尚未接入向 Microsoft 账户上传／应用皮肤**。启动时会自动检查 GitHub 正式版更新，“设置 → 关于”也可手动检查、下载校验并自动重启安装。新版采用发行包的文件名并保存在原目录，旧版加上 `.previous` 后缀保留；新版成功启动后清理更新缓存。详见[发布约定与验证范围](docs/launcher-updates.md)。
+皮肤库支持导入本地 PNG、预览正版账户皮肤，以及上传并应用皮肤。选择经典或纤细手臂模型后，点击“使用皮肤”同步到账户。启动时会自动检查 GitHub 正式版更新，“设置 → 关于”也可手动检查、下载校验并自动重启安装。新版采用发行包的文件名并保存在原目录，旧版加上 `.previous` 后缀保留；新版成功启动后清理更新缓存。详见[发布约定与验证范围](docs/launcher-updates.md)。
 
 ## 官方新闻与游戏更新说明
 
@@ -44,7 +44,7 @@ Microsoft 设备代码登录及 Xbox／Minecraft 认证流程已接入。**本�
 | 平台 | 包格式 | 验证状态 |
 | --- | --- | --- |
 | Linux x86_64，glibc | AppImage | 开发过程中已测试游戏安装和启动 |
-| Windows 10／11 x86_64 | 便携 EXE | 此前版本完成有限的 Wine 检查；1.0.2 已交叉编译打包，仍需 Windows 实机验收 |
+| Windows 10／11 x86_64 | 便携 EXE | 此前版本完成有限的 Wine 检查；1.0.3 已交叉编译打包，仍需 Windows 实机验收 |
 | macOS ARM64 | 计划中 | 暂无构建 |
 
 Windows 需要安装 **Microsoft Edge WebView2 Runtime**。便携 EXE 不内置该运行时，也不会自动安装。Wine／Proton 不作为 Windows 验收环境；Linux 请使用原生 AppImage。目前不面向 Windows 7／8／8.1 或其他处理器架构。
@@ -134,8 +134,7 @@ MC Launcher Advanced 由 [ImperatorVienna](https://github.com/ImperatorVienna) �
 ## 许可证
 
 项目自有代码采用 [GNU GPL 3.0 许可证](LICENSE)（`GPL-3.0-only`）。
-第三方库、字体与美术素材保留各自许可及权利归属，此许可证不对 Minecraft
-素材重新授权。
+第三方库、字体与美术素材保留各自许可及权利归属，此许可证不对 Minecraft 素材重新授权。
 
 ## 界面设计与素材声明
 

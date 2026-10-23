@@ -1,4 +1,4 @@
-//! Local, bounded PNG skin library. No remote requests or game skin injection.
+//! Bounded local PNG library and read-only official account skin previews.
 use base64::{Engine, engine::general_purpose::STANDARD};
 use serde::{Deserialize, Serialize};
 use std::{collections::{BTreeMap, HashSet}, path::PathBuf, sync::Mutex};
@@ -78,5 +78,76 @@ pub fn initialize(_app: &tauri::AppHandle) -> Result<SkinStore, Box<dyn std::err
         let data = Library { skins: vec![Skin { id:"12345678-1234-1234-1234-123456789abc".into(), name:"Test".into(), model:"default".into(), png: STANDARD.encode(include_bytes!("../../src/assets/skins/steve.png")) }], ..Default::default() };
         let saved = persist(&path,data.clone()).unwrap(); assert_eq!(saved.revision,1); assert_eq!(read(&path).unwrap().skins.len(),1); assert!(persist(&path,data).is_err());
         std::fs::write(&path,b"broken").unwrap(); assert!(persist(&path,Library::default()).is_err()); assert_eq!(std::fs::read(&path).unwrap(),b"broken"); std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+fn active_texture(profile: &serde_json::Value) -> Result<Option<(reqwest::Url, String)>, String> {
+    let skins = profile["skins"].as_array().ok_or("Invalid Minecraft profile")?;
+    let Some(skin) = skins.iter().find(|skin| skin["state"] == "ACTIVE") else { return Ok(None); };
+    let mut url = reqwest::Url::parse(skin["url"].as_str().ok_or("Invalid skin URL")?).map_err(|_| "Invalid skin URL")?;
+    if !["http", "https"].contains(&url.scheme()) || url.host_str() != Some("textures.minecraft.net") || !url.username().is_empty() || url.password().is_some() || url.port().is_some() || url.query().is_some() || url.fragment().is_some() {
+        return Err("Invalid skin URL".into());
+    }
+    let hash = url.path().strip_prefix("/texture/").ok_or("Invalid skin URL")?;
+    if hash.is_empty() || hash.len() > 64 || !hash.bytes().all(|c| c.is_ascii_hexdigit()) { return Err("Invalid skin URL".into()); }
+    url.set_scheme("https").map_err(|_| "Invalid skin URL")?;
+    let model = match skin["variant"].as_str() { Some("SLIM") => "slim", Some("CLASSIC") => "default", _ => return Err("Invalid skin model".into()) };
+    Ok(Some((url, model.into())))
+}
+#[tauri::command]
+pub async fn load_account_skin(store: tauri::State<'_, crate::accounts::AccountStore>, selected: String) -> Result<Option<Skin>, String> {
+    let store = store.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let profile = crate::microsoft_auth::skin_profile(&store, &selected)?;
+        let Some((url, model)) = active_texture(&profile)? else { return Ok(None); };
+        let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(20)).redirect(reqwest::redirect::Policy::none()).build().map_err(|_| "Skin image preview is unavailable")?;
+        // Texture requests carry no account credentials and never follow redirects.
+        let response = client.get(url).send().map_err(|_| "Skin image preview is unavailable")?;
+        if !response.status().is_success() { return Err("Skin image preview is unavailable".into()); }
+        let mut bytes = Vec::new();
+        response.take(LIMIT as u64 + 1).read_to_end(&mut bytes).map_err(|_| "Skin image preview is unavailable")?;
+        png(&bytes)?;
+        Ok(Some(Skin { id: selected, name: profile["name"].as_str().unwrap_or("Minecraft").into(), model, png: STANDARD.encode(bytes) }))
+    }).await.map_err(|_| "Skin image preview is unavailable")?
+}
+#[cfg(test)] mod official_tests {
+    use super::*;
+    #[test] fn official_texture_validation() {
+        let profile = |url: &str| serde_json::json!({"skins":[{"state":"ACTIVE","variant":"SLIM","url":url}]});
+        let (url, model) = active_texture(&profile("http://textures.minecraft.net/texture/abc123")).unwrap().unwrap();
+        assert_eq!(url.scheme(), "https"); assert_eq!(model, "slim");
+        for url in ["https://example.com/texture/abc", "https://textures.minecraft.net.evil.test/texture/abc", "https://textures.minecraft.net/texture/abc?token=x", "https://textures.minecraft.net/other"] { assert!(active_texture(&profile(url)).is_err()); }
+        assert!(active_texture(&serde_json::json!({"skins":[]})).unwrap().is_none());
+        assert!(active_texture(&serde_json::json!({})).is_err());
+    }
+}
+
+fn upload_bytes(encoded: &str, model: &str) -> Result<Vec<u8>, String> {
+    if !["default", "slim"].contains(&model) { return Err("Invalid skin model".into()); }
+    if encoded.len() > LIMIT * 4 / 3 + 4 { return Err("Skin PNG exceeds 128 KiB".into()); }
+    let bytes = STANDARD.decode(encoded).map_err(|_| "Invalid skin PNG")?;
+    png(&bytes)?;
+    Ok(bytes)
+}
+#[tauri::command]
+pub async fn upload_account_skin(store: tauri::State<'_, crate::accounts::AccountStore>, selected: String, model: String, image: String) -> Result<Skin, String> {
+    let bytes = upload_bytes(&image, &model)?;
+    let store = store.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let identity = crate::microsoft_auth::identity(&store, &selected)?;
+        crate::microsoft_auth::upload_skin(&identity, &model, bytes)?;
+        Ok(Skin { id: selected, name: identity.name, model, png: image })
+    }).await.map_err(|_| "Skin upload failed; retry")?
+}
+
+#[cfg(test)] mod upload_validation_tests {
+    use super::*;
+    #[test] fn rejects_invalid_images_and_models_before_upload() {
+        let valid = STANDARD.encode(include_bytes!("../../src/assets/skins/steve.png"));
+        assert!(upload_bytes(&valid, "default").is_ok());
+        assert!(upload_bytes(&valid, "slim").is_ok());
+        assert!(upload_bytes(&valid, "unknown").is_err());
+        assert!(upload_bytes("broken", "slim").is_err());
+        assert!(upload_bytes(&"a".repeat(LIMIT * 2), "slim").is_err());
     }
 }

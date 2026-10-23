@@ -407,5 +407,11 @@
   "Developed, maintained and published by ImperatorVienna in an individual capacity.": "由 ImperatorVienna 以个人名义开发、维护和发布，责任主体为维护者本人。",
   "Contact: imperator.vienna@outlook.com": "联系邮箱：imperator.vienna@outlook.com",
   "Maintainer homepage": "维护者主页",
-  "Privacy notice": "隐私声明"
+  "Privacy notice": "隐私声明",
+  "Copy authorization code": "复制授权码",
+  "Choose an arm model, then use the skin to update your Minecraft account.": "选择手臂模型后，点击“使用皮肤”以更新正版账户皮肤。",
+  "Too many skin updates; try again later": "皮肤更新过于频繁，请稍后重试",
+  "Skin upload failed; retry": "皮肤上传失败，请重试",
+  "Skin update could not be confirmed; reload the account skin": "无法确认皮肤更新结果，请重新加载账户皮肤",
+  "Skin updated": "已更新皮肤"
 }

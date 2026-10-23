@@ -75,3 +75,15 @@ test("English diagnostics cover the Chinese catalog and preserve runtime values"
   const path="/home/player/\u4e2d\u6587 $& {e}/game.log";
   expect(localizeMessage(`Official mod loader installer failed; see log: ${path}`)).toContain(path);
 });
+
+test("skin and clipboard diagnostics translate through the native error path", () => {
+  for (const key of ["Invalid skin URL", "Skin image preview is unavailable", "Clipboard is unavailable", "Skin upload failed; retry", "Too many skin updates; try again later", "Skin update could not be confirmed; reload the account skin"] as const) {
+    setLocale("zh-CN");
+    expect(localizeMessage(new Error(key))).toBe(backend[key]);
+    expect(localizeMessage(new Error(key))).not.toBe(key);
+    setLocale("en-US");
+    expect(localizeMessage(new Error(key))).toBe(backendEnglish[key]);
+  }
+  setLocale("zh-CN");
+  expect(t("Skin updated")).toBe(ui["Skin updated"]);
+});

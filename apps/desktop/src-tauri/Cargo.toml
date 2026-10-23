@@ -1,14 +1,14 @@
 [package]
 license = "GPL-3.0-only"
 name = "mclauncher-advanced"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 description = "A third-party powered launcher for Minecraft Java Edition with an interface similar to the official."
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 [dependencies]
 launcher-platform = { path = "../../../crates/launcher-platform" }
-reqwest = { version = "0.13", default-features = false, features = ["blocking", "json", "form", "rustls", "system-proxy"] }
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "json", "form", "multipart", "rustls", "system-proxy"] }
 tempfile = "3"
 flate2 = "1"
 md5 = "0.7"

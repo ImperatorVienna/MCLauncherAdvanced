@@ -116,7 +116,7 @@ fn main() {
             logs::list_logs, logs::read_log, logs::open_log_location,
             microsoft_auth_commands::start_microsoft_login, microsoft_auth_commands::microsoft_login_status, microsoft_auth_commands::cancel_microsoft_login, microsoft_auth_commands::open_microsoft_login,
             accounts::load_accounts, accounts::save_accounts,
-            skins::load_skins, skins::save_skins,
+            skins::load_skins, skins::save_skins, skins::load_account_skin, skins::upload_account_skin,
             launch_commands::launch_game, launch_commands::game_status,
             memory::available_memory_bytes,
             load_library,
