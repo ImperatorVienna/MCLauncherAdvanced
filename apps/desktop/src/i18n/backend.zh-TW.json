@@ -307,5 +307,11 @@
   "Too many skin updates; try again later": "皮膚更新過於頻繁，請稍後重試",
   "Skin update could not be confirmed; reload the account skin": "無法確認皮膚更新結果，請重新載入帳戶皮膚",
   "Invalid skin URL": "皮膚地址無效",
-  "Required dependency {id} could not be resolved: {e}": "無法解析必需依賴 {id}：{e}"
+  "Required dependency {id} could not be resolved: {e}": "無法解析必需依賴 {id}：{e}",
+  "Microsoft sign-in window was closed": "Microsoft 登入視窗已關閉",
+  "Cannot open the Microsoft sign-in window": "無法開啟 Microsoft 登入視窗",
+  "Invalid Microsoft redirect": "Microsoft 返回的跳轉無效",
+  "Cannot generate a secure random value": "無法產生安全隨機數",
+  "Cannot encode sign-in request": "無法編碼登入請求",
+  "Invalid sign-in service address": "登入服務位址無效"
 }

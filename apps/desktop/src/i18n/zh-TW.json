@@ -420,5 +420,7 @@
   "Could not load release notes for this language.": "無法載入目前語言的更新公告。",
   "No release notes are available in this language.": "暫無目前語言的更新公告。",
   "Unsupported release notes language": "不支援此更新公告語言",
-  "Release notes exceed the size limit": "更新公告超出大小限制"
+  "Release notes exceed the size limit": "更新公告超出大小限制",
+  "Complete sign-in in the Microsoft window.": "請在 Microsoft 視窗中完成登入。關閉該視窗將取消登入。",
+  "Preparing Microsoft sign-in…": "正在準備 Microsoft 登入…"
 }

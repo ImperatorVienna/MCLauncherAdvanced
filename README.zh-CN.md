@@ -8,11 +8,11 @@
 
 ## 发布状态
 
-当前版本为 **1.0.5**，提供 Linux 与 Windows x86_64 发行包。各平台验证范围见下文。
+当前版本为 **1.1.0**，提供 Linux 与 Windows x86_64 发行包。各平台验证范围见下文。
 
-本次变更见 [1.0.5 更新公告](docs/release-notes/1.0.5.zh-CN.md)。
+本次变更见 [1.1.0 更新公告](docs/release-notes/1.1.0.zh-CN.md)。
 
-1.0.5 新增繁体中文支持，统一中文资源包文案，整理 Linux 应用入口与注册流程，并修复皮肤页面的焦点恢复问题。
+1.1.0 将微软登录改为官方启动器使用的 Xbox Sisu 流程，在启动器内的 Microsoft 窗口中完成登录，无需设备代码；并修复正式版中无法应用内置皮肤的问题。
 
 “有什么新内容？”按当前界面语言加载对应的启动器更新公告，缺少翻译时显示提示，不回退到其他语言。
 
@@ -46,7 +46,7 @@
 | 平台 | 包格式 | 验证状态 |
 | --- | --- | --- |
 | Linux x86_64，glibc | AppImage | 开发过程中已测试游戏安装和启动 |
-| Windows 10／11 x86_64 | 便携 EXE | 此前版本完成有限的 Wine 检查；1.0.5 已交叉编译打包，仍需 Windows 实机验收 |
+| Windows 10／11 x86_64 | 便携 EXE | 此前版本完成有限的 Wine 检查；1.1.0 已交叉编译打包，仍需 Windows 实机验收 |
 | macOS ARM64 | 计划中 | 暂无构建 |
 
 Windows 需要安装 **Microsoft Edge WebView2 Runtime**。便携 EXE 不内置该运行时，也不会自动安装。Wine／Proton 不作为 Windows 验收环境；Linux 请使用原生 AppImage。目前不面向 Windows 7／8／8.1 或其他处理器架构。
@@ -129,7 +129,7 @@ MC Launcher Advanced 由 [ImperatorVienna](https://github.com/ImperatorVienna) �
 
 ## 问题报告与致谢
 
-报告问题时请提供版本分支、系统／架构、游戏与加载器版本、复现步骤及脱敏日志。不要附上访问令牌、刷新令牌、设备登录代码或账户存储文件。
+报告问题时请提供版本分支、系统／架构、游戏与加载器版本、复现步骤及脱敏日志。不要附上访问令牌、刷新令牌或账户存储文件。
 
 依赖和打包素材各有独立的声明与许可证，见 `apps/desktop/src-tauri/licenses/`、内置字体的 OFL 声明及[素材来源](docs/ui-reference/README.md)。本 README 不授予第三方美术素材或 Minecraft 资源的再分发权。Minecraft 及相关名称属于各自权利人。
 

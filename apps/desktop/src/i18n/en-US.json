@@ -420,5 +420,7 @@
   "Could not load release notes for this language.": "Could not load release notes for this language.",
   "No release notes are available in this language.": "No release notes are available in this language.",
   "Unsupported release notes language": "Unsupported release notes language",
-  "Release notes exceed the size limit": "Release notes exceed the size limit"
+  "Release notes exceed the size limit": "Release notes exceed the size limit",
+  "Complete sign-in in the Microsoft window.": "Complete sign-in in the Microsoft window. Closing it cancels sign-in.",
+  "Preparing Microsoft sign-in…": "Preparing Microsoft sign-in…"
 }

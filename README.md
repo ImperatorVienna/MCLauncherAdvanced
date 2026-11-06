@@ -8,11 +8,11 @@ This independent desktop launcher supports keyboard, mouse and controller naviga
 
 ## Release status
 
-The current version is **1.0.5**, available for Linux and Windows x86_64. Platform validation details are listed below.
+The current version is **1.1.0**, available for Linux and Windows x86_64. Platform validation details are listed below.
 
-See the [1.0.5 release notes](docs/release-notes/1.0.5.en-US.md).
+See the [1.1.0 release notes](docs/release-notes/1.1.0.en-US.md).
 
-Version 1.0.5 adds Traditional Chinese, standardizes Chinese resource labels, consolidates Linux desktop registration and fixes focus restoration on the skin page.
+Version 1.1.0 switches Microsoft sign-in to the official launcher's Xbox Sisu flow, completed in a Microsoft window inside the launcher without a device code, and fixes applying bundled skins in packaged builds.
 
 “What’s new?” loads launcher release notes in the selected interface language. Missing translations display a notice without falling back to another language.
 
@@ -46,7 +46,7 @@ Version 1.0.2 introduced the MCLA icon for the launcher window, desktop integrat
 | Platform | Package | Validation status |
 | --- | --- | --- |
 | Linux x86_64, glibc | AppImage | Game installation and launch tested during development |
-| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.0.5 has been cross-compiled and packaged, but still requires testing on Windows |
+| Windows 10/11 x86_64 | Portable EXE | Earlier versions received limited Wine checks; 1.1.0 has been cross-compiled and packaged, but still requires testing on Windows |
 | macOS ARM64 | Planned | No build available |
 
 Windows requires **Microsoft Edge WebView2 Runtime**. The portable EXE does not include or automatically install it. Wine/Proton is not a substitute for Windows acceptance testing; use the native AppImage on Linux. Windows 7/8/8.1 and other processor architectures are not current targets.
@@ -129,7 +129,7 @@ Email: [imperator.vienna@outlook.com](mailto:imperator.vienna@outlook.com).
 
 ## Issue reports and acknowledgements
 
-Include the version or branch, operating system and architecture, game and loader versions, reproduction steps and redacted logs when reporting an issue. Do not attach access tokens, refresh tokens, device sign-in codes or account storage files.
+Include the version or branch, operating system and architecture, game and loader versions, reproduction steps and redacted logs when reporting an issue. Do not attach access tokens, refresh tokens or account storage files.
 
 Dependencies and bundled assets have their own notices and licenses. See `apps/desktop/src-tauri/licenses/`, the bundled font's OFL notice and [asset provenance](docs/ui-reference/README.md). This README does not grant redistribution rights to third-party artwork or Minecraft assets. Minecraft and related names belong to their respective owners.
 

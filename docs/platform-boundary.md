@@ -154,6 +154,24 @@ are not claimed as fully implemented or tested; live access and an established
 service contract are still needed. Do not infer these states from arbitrary item
 names or introduce platform-specific authentication flows.
 
+## Xbox Sisu sign-in (r35)
+
+Sign-in follows the official launcher's Xbox Sisu flow with client ID
+`00000000402b5328`. `microsoft_auth.rs` owns the P-256 proof-of-possession key,
+request signing, device token, Sisu authenticate/authorize, PKCE, `state`
+validation, XSTS, Minecraft login, entitlement/profile checks and refresh. The
+device key and token are stored with the credentials in the private
+`accounts.json`; they never cross IPC. The service still has no Tauri imports:
+it reports the Microsoft page through a callback and accepts the redirect via
+`deliver_redirect`/`abandon_authorization`.
+
+`microsoft_auth_commands.rs` (application host) opens an incognito Tauri window
+on that page, intercepts navigation to `ms-xal-00000000402b5328://auth` before it
+loads, and hands the address to the service. The window has no IPC capability and
+only HTTPS navigation is permitted. Closing it cancels the waiting attempt. No
+platform adapter or core change was needed; the external-browser path is no
+longer used for sign-in. The frontend only changed wording and keeps focus logic.
+
 ## Desktop clipboard
 
 `clipboard_commands` bounds text input and dispatches to the toolkit main thread.

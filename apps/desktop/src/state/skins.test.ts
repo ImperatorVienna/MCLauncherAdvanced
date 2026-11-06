@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptySkins, validateSkins, removeSkin, setSkinModel, displaySkins } from "./skins";
+import { emptySkins, validateSkins, removeSkin, setSkinModel, displaySkins, bundledSkinFile } from "./skins";
 describe("local skins", () => {
     const skin = {id:"12345678-1234-1234-1234-123456789abc",name:"Custom",model:"default" as const,png:"YWJj"};
     it("validates builtins and rejects dangling assignments and duplicate IDs", () => {
@@ -30,5 +30,16 @@ describe("local skins", () => {
         for (const patch of [{name:" "},{name:"a".repeat(65)},{png:"x".repeat(174769)},{model:"unknown"}]) {
             expect(() => validateSkins({...emptySkins(),skins:[{...skin,...patch} as typeof skin]})).toThrow();
         }
+    });
+});
+
+describe("bundled skin bytes", () => {
+    it("decodes inlined data URLs without fetch, which CSP blocks", async () => {
+        const original = globalThis.fetch; globalThis.fetch = (() => { throw Error("fetch must not be used"); }) as typeof fetch;
+        try {
+            const file = await bundledSkinFile("data:image/png;base64," + btoa("\x89PNG\r\n"));
+            expect(file.type).toBe("image/png");
+            expect([...new Uint8Array(await file.arrayBuffer())]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]);
+        } finally { globalThis.fetch = original; }
     });
 });

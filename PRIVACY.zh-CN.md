@@ -4,7 +4,7 @@ MC Launcher Advanced 由 ImperatorVienna 以个人名义维护。联系邮箱：
 
 ## 登录与凭据
 
-Microsoft 登录通过设备代码在系统浏览器中进行。启动器不要求输入或保存 Microsoft 密码。原生进程与 Microsoft、Xbox Live 和 Minecraft Services 交换令牌。界面仅接收临时的用户登录代码和公开账户摘要，不接收访问令牌或刷新令牌。
+Microsoft 登录在启动器打开的独立窗口中、于 Microsoft 自己的页面上进行，该窗口不保留 Cookie。密码在 Microsoft 页面中输入，启动器不读取也不保存。原生进程与 Microsoft、Xbox Live 和 Minecraft Services 交换令牌，并将 Xbox 设备密钥和设备令牌与刷新令牌一起保存在 `accounts.json` 中。界面仅接收公开账户摘要，不接收访问令牌、刷新令牌或设备令牌。
 
 启动器将 Minecraft 档案名称和 UUID、服务返回的 Xbox 用户 ID、访问与刷新令牌、过期时间以及所选账户保存在启动器可执行文件旁的 `accounts.json` 中。该文件未经加密。新写入的文件在 Linux 使用仅所有者可读写的权限，在 Windows 使用受限文件 ACL。这些措施无法防止以你的身份或管理员身份运行的软件读取文件，复制到其他文件系统后权限也可能不再保留。
 

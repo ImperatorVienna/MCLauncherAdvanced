@@ -4,7 +4,7 @@ MC Launcher Advanced 由 ImperatorVienna 以個人名義維護。聯絡郵箱：
 
 ## 登入與憑據
 
-Microsoft 登入通過裝置程式碼在系統瀏覽器中進行。啟動器不要求輸入或儲存 Microsoft 密碼。原生程序與 Microsoft、Xbox Live 和 Minecraft Services 交換令牌。介面僅接收臨時的使用者登入程式碼和公開帳戶摘要，不接收訪問令牌或重新整理令牌。
+Microsoft 登入在啟動器開啟的獨立視窗中、於 Microsoft 自己的頁面上進行，該視窗不保留 Cookie。密碼在 Microsoft 頁面中輸入，啟動器不讀取也不儲存。原生程序與 Microsoft、Xbox Live 和 Minecraft Services 交換令牌，並將 Xbox 裝置金鑰和裝置令牌與重新整理令牌一起儲存在 `accounts.json` 中。介面僅接收公開帳戶摘要，不接收訪問令牌、重新整理令牌或裝置令牌。
 
 啟動器將 Minecraft 檔案名稱和 UUID、服務返回的 Xbox 使用者 ID、訪問與重新整理令牌、過期時間以及所選帳戶儲存在啟動器執行檔旁的 `accounts.json` 中。該檔案未經加密。新寫入的檔案在 Linux 使用僅所有者可讀寫的許可權，在 Windows 使用受限檔案 ACL。這些措施無法防止以你的身份或管理員身份執行的軟體讀取檔案，複製到其他檔案系統後許可權也可能不再保留。
 

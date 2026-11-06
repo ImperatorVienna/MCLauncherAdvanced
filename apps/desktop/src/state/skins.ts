@@ -9,6 +9,15 @@ const assets = import.meta.glob("../assets/skins/*.png", { eager: true, query: "
 export const builtinSkins: DisplaySkin[] = ["steve", "alex", "zuri", "sunny", "noor", "makena", "kai", "efe", "ari"].map(name => ({
     id: `builtin-${name}`, name: name[0].toUpperCase() + name.slice(1), model: name === "alex" ? "slim" : "default", png: "", url: assets[`../assets/skins/${name}.png`], builtin: true,
 }));
+/** Bundled skins are inlined as data: URLs; decode them locally because CSP blocks fetch() of data: URLs. */
+export async function bundledSkinFile(url: string): Promise<File> {
+    const prefix = "data:image/png;base64,";
+    if (url.startsWith(prefix)) {
+        const binary = atob(url.slice(prefix.length));
+        return new File([Uint8Array.from(binary, c => c.charCodeAt(0))], "skin.png", {type:"image/png"});
+    }
+    return new File([await (await fetch(url)).blob()], "skin.png", {type:"image/png"});
+}
 export const emptySkins = (): SkinLibrary => ({ revision: 0, skins: [], assignments: {} });
 export function validateSkins(data: SkinLibrary) {
     if (!data || !Number.isSafeInteger(data.revision) || data.revision < 0 || !Array.isArray(data.skins) || data.skins.length > 100 || !data.assignments || typeof data.assignments !== "object" || Array.isArray(data.assignments) || Object.keys(data.assignments).length > 1000) throw Error(t("Invalid skin library"));
@@ -85,7 +94,7 @@ export function useSkins(selectedAccount: string | null = null, accountRevision 
         const request = ++generation.current;
         try {
             // Bundled skins use asset URLs; imported and official skins already contain PNG bytes.
-            const image = skin.png || await importSkin(new File([await (await fetch(skin.url)).blob()], "skin.png", {type:"image/png"}));
+            const image = skin.png || await importSkin(await bundledSkinFile(skin.url));
             if (request !== generation.current) return false;
             const saved = await invokeNative<Skin>("upload_account_skin", { selected: selectedAccount, model: skin.model, image });
             if (request !== generation.current) return false;

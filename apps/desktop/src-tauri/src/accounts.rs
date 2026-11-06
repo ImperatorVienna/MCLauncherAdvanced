@@ -18,11 +18,16 @@ pub struct Credential {
     pub id: String, pub name: String, pub refresh_token: String,
     pub access_token: String, pub expires_at: u64, pub xuid: String,
 }
+/// Xbox proof-of-possession device identity. Private like refresh tokens; never sent over IPC.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceRecord { pub id: String, pub key: String, pub token: String, pub not_after: u64 }
 #[derive(Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Stored {
     revision: u64, selected: Option<String>,
     #[serde(default)] credentials: Vec<Credential>,
+    #[serde(default, skip_serializing_if = "Option::is_none")] device: Option<DeviceRecord>,
 }
 impl Stored {
     fn public(&self) -> Accounts { Accounts { revision: self.revision, selected: self.selected.clone(),
@@ -93,6 +98,13 @@ impl AccountStore {
     pub fn credential(&self, id: &str) -> Result<Credential> {
         let path=self.0.lock().map_err(|_|"Account storage is unavailable")?;
         read(&path)?.credentials.into_iter().find(|c|c.id==id).ok_or("Account was removed; sign in again".into())
+    }
+    pub fn device(&self) -> Result<Option<DeviceRecord>> {
+        Ok(read(&*self.0.lock().map_err(|_|"Account storage is unavailable")?)?.device)
+    }
+    pub fn save_device(&self, device: DeviceRecord) -> Result<()> {
+        let path=self.0.lock().map_err(|_|"Account storage is unavailable")?;
+        let mut stored=read(&path)?; stored.device=Some(device); write(&path,&stored)
     }
     // Persist a rotated refresh token before contacting Xbox/Minecraft. Never resurrect a removed account.
     pub fn replace(&self, previous: &Credential, next: Credential) -> Result<()> {

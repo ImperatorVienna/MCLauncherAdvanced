@@ -4,7 +4,7 @@ MC Launcher Advanced is maintained by ImperatorVienna in an individual capacity.
 
 ## Sign-in and credentials
 
-Microsoft sign-in takes place in the system browser using a device code. The launcher does not ask for or store your Microsoft password. The native process exchanges tokens with Microsoft, Xbox Live and Minecraft Services. The interface receives the temporary user-facing sign-in code and public account summaries, not access or refresh tokens.
+Microsoft sign-in takes place on Microsoft's own page in a separate launcher window that does not keep cookies. You enter your password on Microsoft's page; the launcher does not read or store it. The native process exchanges tokens with Microsoft, Xbox Live and Minecraft Services, and keeps an Xbox device key and device token in `accounts.json` alongside the refresh token. The interface receives public account summaries only, not access, refresh or device tokens.
 
 The launcher stores Minecraft profile names and UUIDs, Xbox user IDs when returned, access and refresh tokens, expiry times and the selected account in `accounts.json` beside the launcher executable. This file is not encrypted. New writes use owner-only file permissions on Linux and a restricted file ACL on Windows. These protections do not protect against software running as you or an administrator, and may not survive copying to another filesystem.
 

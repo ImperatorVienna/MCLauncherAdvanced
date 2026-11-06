@@ -60,10 +60,10 @@ export function AccountsPage({ accounts }: { accounts: ReturnType<typeof useAcco
             <StandardButton id="account-login" tone="green" disabled={!isDesktop() || busy || deleting} onClick={()=>void login.start()}>{t("Sign in")}</StandardButton>
         </div>
         {login.status.running && <div className="account-editor" aria-live="polite">
-            <p>{t(login.status.phase==="waiting" ? "Open the Microsoft page and enter this code to sign in." : login.status.phase==="verifying" ? "Verifying Xbox and Minecraft account…" : "Requesting a Microsoft sign-in code…")}</p>
+            <p>{t(login.status.phase==="waiting" ? (login.status.userCode ? "Open the Microsoft page and enter this code to sign in." : "Complete sign-in in the Microsoft window.") : login.status.phase==="verifying" ? "Verifying Xbox and Minecraft account…" : login.status.userCode===null ? "Preparing Microsoft sign-in…" : "Requesting a Microsoft sign-in code…")}</p>
             {login.status.userCode && <><p className="sign-in-code">{login.status.userCode}</p><p>{login.status.verificationUri}</p></>}
             <div className="config-actions" data-navigation-actions>
-                {login.status.userCode && <StandardButton id="account-login-open" tone="green" onClick={()=>void login.open()}>{t("Open sign-in page")}</StandardButton>}
+                {login.status.phase==="waiting" && <StandardButton id="account-login-open" tone="green" onClick={()=>void login.open()}>{t("Open sign-in page")}</StandardButton>}
                 {login.status.userCode && <StandardButton id="account-login-copy" onClick={() => void copyCode()}>{t(copied ? "Copied" : "Copy authorization code")}</StandardButton>}
                 <StandardButton id="account-login-cancel" onClick={()=>void login.cancel().then(()=>requestAnimationFrame(()=>manager.focus("account-login")))}>{t("Cancel")}</StandardButton>
             </div>
