@@ -12,7 +12,7 @@ The current version is **1.1.0**, available for Linux and Windows x86_64. Platfo
 
 See the [1.1.0 release notes](docs/release-notes/1.1.0.en-US.md).
 
-Version 1.1.0 switches Microsoft sign-in to the official launcher's Xbox Sisu flow, completed in a Microsoft window inside the launcher without a device code, and fixes applying bundled skins in packaged builds.
+Version 1.1.0 switches Microsoft sign-in to the official launcher's Xbox Sisu flow in a launcher window and fixes applying bundled skins in packaged builds.
 
 “What’s new?” loads launcher release notes in the selected interface language. Missing translations display a notice without falling back to another language.
 
